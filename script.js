@@ -2,6 +2,23 @@ const header = document.querySelector(".site-header");
 const menuButton = document.querySelector(".menu-toggle");
 const nav = document.querySelector(".nav-links");
 const toast = document.querySelector(".placeholder-toast");
+const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+const motionVideos = document.querySelectorAll("video[autoplay]");
+
+const syncHeroMotion = () => {
+  motionVideos.forEach(video => {
+    if (motionPreference.matches) {
+      video.pause();
+    } else {
+      video.play().catch(() => {
+        // The poster remains visible if autoplay fails.
+      });
+    }
+  });
+};
+
+syncHeroMotion();
+motionPreference.addEventListener("change", syncHeroMotion);
 
 window.addEventListener("scroll", () => {
   header.classList.toggle("scrolled", window.scrollY > 30);

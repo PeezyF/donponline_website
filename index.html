@@ -36,48 +36,39 @@
   </header>
 
   <main id="top">
-    <section class="hero section">
-      <div class="hero-orbit hero-orbit-one"></div>
-      <div class="hero-orbit hero-orbit-two"></div>
+    <section class="hero section" aria-labelledby="hero-title">
+      <div class="hero-media" aria-hidden="true">
+        <video
+          class="hero-video"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="metadata"
+          poster="assets/images/targetpractice4.PNG"
+        >
+          <source src="assets/videos/home-hero.mp4" type="video/mp4">
+        </video>
+        <div class="hero-overlay"></div>
+      </div>
 
-      <div class="hero-copy reveal">
-        <p class="eyebrow">THE OFFICIAL HOME OF DON P</p>
-        <h1>Welcome to Don P Online <br><span>.</span></h1>
-        <p class="hero-description">
-          MUSIC MEDIA MOTION
-          
-         Podcasts. Production. Culture. Business. Tutorials.
-        </p>
+      <div class="hero-copy">
+        <p class="eyebrow hero-eyebrow">THE OFFICIAL HOME OF DON P</p>
+        <h1 id="hero-title" class="hero-title">
+          <span>MUSIC.</span>
+          <span>MEDIA.</span>
+          <span>MOTION.</span>
+        </h1>
+        <p class="hero-description">Welcome to the world of Don P.</p>
         <div class="hero-actions">
-          <a class="button button-primary" href="#music">Hear the latest</a>
-          <a class="button button-secondary" href="#shows">Watch the shows</a>
+          <a class="button button-primary" href="#music">Enter the Experience</a>
+          <a class="button button-secondary" href="#shows">Watch the Latest</a>
         </div>
       </div>
 
-      <div class="hero-card reveal">
-        <div class="hero-card-top">
-          <span>FEATURED RELEASE</span>
-          <span class="live-dot">COMING SOON</span>
-        </div>
-        <div class="cover-art">
-          <div class="cover-grid"></div>
-           <img src="assets/images/targetpractice4.PNG"
-         alt="Target Practice 4">
-</div>
-          <p>DON P</p>
-          <h2>TARGET<br>PRACTICE 4</h2>
-          <span>HOSTED BY DJ SCREAM</span>
-        </div>
-        <div class="hero-card-bottom">
-          <div>
-            <small>NEW MUSIC</small>
-            <strong>Target Practice 4</strong>
-          </div>
-          <a href="#music" aria-label="View music">↗</a>
-        </div>
+      <div class="scroll-note">
+        SCROLL TO ENTER THE WORLD <span aria-hidden="true">↓</span>
       </div>
-
-      <div class="scroll-note">SCROLL TO ENTER THE WORLD <span>↓</span></div>
     </section>
 
     <section class="ticker" aria-label="Site topics">
@@ -124,12 +115,11 @@
           <div class="card-number">02</div>
           <div class="show-visual visual-motion">
             <span>INTERVIEW SERIES</span>
-            <h3>HAVING<br>MOTION</h3>
             <p>Conversations with the artists and creators shaping what is next.</p>
           </div>
           <div class="show-footer">
             <span>EXPLORE THE SHOW</span>
-            <a href="#" data-placeholder="Having Motion link">↗</a>
+            <a href="#" data-placeholder="Havin Motion link">↗</a>
           </div>
         </article>
 
@@ -184,8 +174,19 @@
       <div class="release-stack">
         <article class="release-card featured-release reveal">
           <div class="release-art target-art">
+            <video
+              class="tp4-video"
+              autoplay
+              muted
+              loop
+              playsinline
+              preload="metadata"
+              poster="assets/images/targetpractice4.PNG"
+              aria-label="Target Practice 4 featured video"
+            >
+              <source src="assets/videos/tp4-feature.mp4" type="video/mp4">
+            </video>
             <span class="release-badge">UP NEXT</span>
-            <strong>TP4</strong>
           </div>
           <div class="release-info">
             <p class="eyebrow">HOSTED BY DJ SCREAM</p>
