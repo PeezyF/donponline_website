@@ -56,18 +56,46 @@ document.querySelectorAll("[data-placeholder]").forEach(link => {
   });
 });
 
-document.querySelectorAll(".play-button").forEach(button => {
+const beatAudio = new Audio();
+let activePlayButton = null;
+
+const resetPlayButton = (button) => {
+  if (!button) return;
+  button.classList.remove("playing");
+  button.textContent = "▶";
+  button.setAttribute("aria-label", button.getAttribute("aria-label").replace("Pause", "Play"));
+};
+
+document.querySelectorAll(".play-button[data-audio]").forEach(button => {
   button.addEventListener("click", () => {
-    const playing = button.classList.toggle("playing");
-    button.textContent = playing ? "❚❚" : "▶";
+    const isCurrentTrack = activePlayButton === button;
+
+    if (isCurrentTrack && !beatAudio.paused) {
+      beatAudio.pause();
+      resetPlayButton(button);
+      return;
+    }
+
+    resetPlayButton(activePlayButton);
+    if (!isCurrentTrack) beatAudio.src = button.dataset.audio;
+
+    activePlayButton = button;
+    beatAudio.play().then(() => {
+      button.classList.add("playing");
+      button.textContent = "❚❚";
+      button.setAttribute("aria-label", button.getAttribute("aria-label").replace("Play", "Pause"));
+    }).catch(() => resetPlayButton(button));
   });
 });
 
+beatAudio.addEventListener("ended", () => resetPlayButton(activePlayButton));
+
 document.querySelector(".newsletter-form").addEventListener("submit", (event) => {
   event.preventDefault();
-  toast.textContent = "Connect this form to Mailchimp, Kit, or your email platform.";
-  toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 3000);
+  const email = document.getElementById("email").value.trim();
+  const subject = encodeURIComponent("DONPONLINE Access Request");
+  const body = encodeURIComponent(`Access request from: ${email}`);
+  window.location.href = `mailto:donpbeats@gmail.com?subject=${subject}&body=${body}`;
 });
 
 document.getElementById("year").textContent = new Date().getFullYear();
