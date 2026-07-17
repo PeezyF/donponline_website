@@ -584,7 +584,14 @@ footer a:hover { color: var(--acid); }
   .hero-actions .button { width: 100%; }
   .section-heading { gap: 24px; margin-bottom: 38px; }
   .section-heading h2, .music-intro h2, .beats-copy h2, .about-statement h2, .connect-inner h2 { font-size: clamp(52px, 17vw, 82px); }
-  .show-visual, .show-card-large .show-visual { min-height: 420px; padding: 24px; }
+  .show-visual { min-height: 340px; padding: 24px; }
+  .show-card-large .show-visual { min-height: 380px; }
+  .visual-motion::before {
+    background-color: #000;
+    background-position: center, center;
+    background-size: 100% 100%, 100% auto;
+    background-repeat: no-repeat;
+  }
   .show-visual h3 { font-size: 50px; }
   .beats-panel { padding: 28px 20px; }
   .mini-player { padding: 18px; box-shadow: 8px 8px 0 rgba(0,0,0,.15); }
