@@ -25,7 +25,8 @@ service-role key, Stripe secret key, or webhook secret in browser files.
 3. Deploy `create-checkout` and `stripe-webhook`.
 4. Create a Stripe webhook endpoint for:
    `https://YOUR_PROJECT_REF.supabase.co/functions/v1/stripe-webhook`
-5. Subscribe it to `checkout.session.completed`.
+5. Subscribe it to `checkout.session.completed` and
+   `checkout.session.async_payment_succeeded`.
 
 ## 3. Verify before launch
 
