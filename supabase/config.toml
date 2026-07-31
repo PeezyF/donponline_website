@@ -1,4 +1,4 @@
-project_id = "replace-with-your-supabase-project-ref"
+project_id = "nxgosvbopeefqubmmych"
 
 [functions.stripe-webhook]
 verify_jwt = false
