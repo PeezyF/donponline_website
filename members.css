@@ -1,0 +1,142 @@
+.members-page { background: #070707; }
+.members-page .site-header { position: fixed; }
+.member-nav { display: flex; align-items: center; gap: 24px; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.member-nav a:hover { color: var(--acid); }
+
+.coin-hero {
+  position: relative;
+  isolation: isolate;
+  min-height: 760px;
+  display: grid;
+  grid-template-columns: 1.2fr .8fr;
+  align-items: center;
+  gap: 50px;
+  overflow: hidden;
+  padding: 150px max(24px, calc((100vw - 1280px) / 2)) 90px;
+  background:
+    radial-gradient(circle at 80% 40%, rgba(225,6,0,.28), transparent 35%),
+    linear-gradient(130deg, #070707 20%, #1b0000 100%);
+}
+.coin-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: repeating-linear-gradient(115deg, transparent 0 58px, rgba(255,255,255,.025) 58px 59px);
+}
+.coin-hero-copy h1 { margin: 14px 0 24px; font-family: "Anton", sans-serif; font-size: clamp(80px, 12vw, 180px); font-weight: 400; line-height: .8; letter-spacing: -.035em; }
+.coin-hero-copy h1 span { color: var(--acid); }
+.coin-hero-copy > p:last-of-type { max-width: 690px; color: #d5d1cb; font-size: clamp(18px, 2vw, 24px); line-height: 1.55; }
+.welcome-chip { width: max-content; display: flex; align-items: center; gap: 14px; margin-top: 34px; padding: 14px 18px; border: 1px solid var(--acid); background: rgba(225,6,0,.08); }
+.welcome-chip strong { color: var(--acid); font-family: "Anton", sans-serif; font-size: 38px; font-weight: 400; }
+.welcome-chip span { font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; line-height: 1.4; }
+.coin-orbit { display: grid; place-items: center; min-height: 430px; }
+.coin-face {
+  position: relative;
+  width: min(340px, 70vw);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border: 15px solid #ff3b34;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ff524c, #a90000 58%, #430000);
+  color: #fff;
+  box-shadow: 0 0 0 6px #650000, 0 35px 100px rgba(225,6,0,.35), inset 0 0 45px rgba(255,255,255,.2);
+  transform: rotate(8deg);
+}
+.coin-face::before, .coin-face::after { content: "✦"; position: absolute; color: rgba(255,255,255,.75); font-size: 30px; }
+.coin-face::before { top: 28px; }
+.coin-face::after { bottom: 28px; }
+.coin-face span { font-family: "Anton", sans-serif; font-size: clamp(76px, 10vw, 140px); letter-spacing: -.05em; }
+.coin-face b { position: absolute; bottom: 75px; font-size: 14px; letter-spacing: .2em; }
+
+.system-notice { max-width: 1180px; margin: 28px auto 0; padding: 18px 22px; border-left: 5px solid var(--acid); background: #191010; color: #f1d5d3; line-height: 1.55; }
+.member-section { max-width: 1280px; margin: auto; padding: 100px 34px; }
+.member-section-heading { max-width: 760px; margin-bottom: 48px; }
+.member-section-heading h2, .wallet-header h2 { margin: 8px 0 20px; font-family: "Anton", sans-serif; font-size: clamp(54px, 7vw, 100px); font-weight: 400; line-height: .9; }
+.member-section-heading > p:last-child, .wallet-header > div > p:last-child { color: #aaa49f; line-height: 1.65; }
+.auth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.member-form { display: grid; gap: 20px; padding: clamp(24px, 4vw, 44px); border: 1px solid var(--line); background: #0e0e0e; }
+.form-heading { display: flex; align-items: center; gap: 14px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+.form-heading > span { color: var(--acid); font-family: "Anton", sans-serif; font-size: 42px; }
+.form-heading > div { display: grid; gap: 4px; }
+.form-heading strong { font-size: 14px; letter-spacing: .08em; }
+.form-heading small { color: #938e89; }
+.member-form > label { display: grid; gap: 8px; color: var(--acid); font-size: 10px; font-weight: 900; letter-spacing: .11em; }
+.member-form input { width: 100%; min-height: 54px; border: 1px solid var(--line); border-radius: 0; background: #171717; color: var(--white); padding: 14px 16px; outline: none; }
+.member-form input:focus { border-color: var(--acid); box-shadow: 0 0 0 2px rgba(225,6,0,.16); }
+.member-form .terms-check { display: flex; grid-template-columns: none; flex-direction: row; align-items: flex-start; gap: 10px; color: #aaa49f; letter-spacing: 0; line-height: 1.5; }
+.terms-check input { width: 20px; min-height: 20px; accent-color: var(--acid); }
+.member-form > button:not(.text-button) { min-height: 58px; border: 1px solid var(--acid); background: var(--acid); color: #fff; font-size: 11px; font-weight: 900; letter-spacing: .1em; cursor: pointer; }
+.member-form > button:not(.text-button):hover { background: #fff; border-color: #fff; color: #070707; }
+.member-form button:disabled, .coin-pack:disabled { opacity: .45; cursor: not-allowed; }
+.text-button { justify-self: start; border: 0; background: transparent; color: #aaa49f; padding: 0; font-size: 11px; cursor: pointer; text-decoration: underline; }
+
+.wallet-section { max-width: 1380px; }
+.wallet-header { display: flex; justify-content: space-between; align-items: end; gap: 30px; margin-bottom: 40px; }
+.wallet-header h2 span { color: var(--acid); }
+.outline-button { min-height: 46px; padding: 10px 18px; border: 1px solid #fff; background: transparent; color: #fff; font-weight: 800; cursor: pointer; }
+.wallet-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; margin-bottom: 50px; }
+.balance-card, .wallet-stat { min-height: 210px; display: flex; flex-direction: column; justify-content: flex-end; padding: 28px; border: 1px solid var(--line); background: #0e0e0e; }
+.balance-card { position: relative; overflow: hidden; background: linear-gradient(125deg, #5c0000, #d10600); }
+.balance-card::after { content: "MC"; position: absolute; right: -8px; top: -24px; color: rgba(255,255,255,.08); font-family: "Anton", sans-serif; font-size: 180px; }
+.balance-card span, .wallet-stat span { font-size: 9px; font-weight: 900; letter-spacing: .14em; }
+.balance-card strong, .wallet-stat strong { position: relative; z-index: 1; font-family: "Anton", sans-serif; font-size: clamp(62px, 8vw, 108px); font-weight: 400; line-height: 1; }
+.balance-card b { font-size: 12px; letter-spacing: .14em; }
+.balance-card small { margin-top: 16px; color: rgba(255,255,255,.7); }
+.wallet-stat strong { color: var(--acid); font-size: 70px; }
+.portal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.portal-panel, .activity-panel { padding: clamp(24px, 4vw, 38px); border: 1px solid var(--line); background: #0e0e0e; }
+.panel-heading { margin-bottom: 24px; }
+.panel-heading h3 { margin: 7px 0 0; font-family: "Anton", sans-serif; font-size: 38px; font-weight: 400; }
+.pack-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.coin-pack { min-height: 160px; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 7px; padding: 18px; border: 1px solid var(--line); background: #171717; color: #fff; cursor: pointer; text-align: left; }
+.coin-pack:hover, .coin-pack.featured { border-color: var(--acid); }
+.coin-pack.featured { background: rgba(225,6,0,.1); }
+.coin-pack span { color: #aaa49f; font-size: 8px; font-weight: 900; letter-spacing: .1em; }
+.coin-pack strong { font-family: "Anton", sans-serif; font-size: 42px; font-weight: 400; }
+.coin-pack small { color: var(--acid); font-weight: 900; }
+.purchase-note, .empty-state { color: #918b87; font-size: 12px; line-height: 1.6; }
+.catalog-grid { display: grid; gap: 10px; }
+.catalog-item { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: center; padding: 18px; border: 1px solid var(--line); }
+.catalog-item > div { display: grid; gap: 6px; }
+.catalog-item strong { font-size: 13px; }
+.catalog-item small { color: #918b87; line-height: 1.45; }
+.catalog-item button { min-width: 105px; padding: 10px; border: 1px solid var(--acid); background: transparent; color: #fff; font-size: 9px; font-weight: 900; cursor: pointer; }
+.catalog-item button[disabled] { border-color: var(--line); color: #918b87; }
+.activity-panel { margin-top: 22px; }
+.activity-list { display: grid; }
+.activity-row { display: grid; grid-template-columns: 1fr auto; gap: 16px; padding: 15px 0; border-top: 1px solid var(--line); }
+.activity-row div { display: grid; gap: 4px; }
+.activity-row small { color: #918b87; }
+.activity-row > strong.positive { color: #62df87; }
+.activity-row > strong.negative { color: #ff625d; }
+.coin-terms { max-width: 1200px; margin: 0 auto 90px; padding: 28px 34px; border-top: 1px solid var(--line); color: #918b87; font-size: 12px; line-height: 1.7; }
+.coin-terms strong { color: #fff; letter-spacing: .1em; }
+.member-toast { position: fixed; left: 50%; bottom: 24px; z-index: 200; transform: translate(-50%, 150%); max-width: min(520px, 90vw); padding: 14px 20px; background: #fff; color: #070707; font-size: 12px; font-weight: 800; transition: .25s ease; }
+.member-toast.show { transform: translate(-50%, 0); }
+
+@media (max-width: 900px) {
+  .coin-hero { grid-template-columns: 1fr; padding-top: 130px; }
+  .coin-orbit { min-height: 330px; }
+  .auth-grid, .portal-grid { grid-template-columns: 1fr; }
+  .wallet-grid { grid-template-columns: 1fr 1fr; }
+  .balance-card { grid-column: 1 / -1; }
+}
+
+@media (max-width: 620px) {
+  .member-nav { gap: 12px; font-size: 9px; }
+  .member-nav a:first-child { display: none; }
+  .coin-hero { min-height: auto; padding: 120px 20px 70px; }
+  .coin-hero-copy h1 { font-size: clamp(74px, 26vw, 112px); }
+  .coin-orbit { min-height: 270px; }
+  .coin-face { width: 230px; border-width: 10px; }
+  .coin-face b { bottom: 48px; }
+  .member-section { padding: 75px 20px; }
+  .wallet-header { align-items: flex-start; flex-direction: column; }
+  .wallet-grid, .pack-grid { grid-template-columns: 1fr; }
+  .balance-card { grid-column: auto; }
+  .coin-pack { min-height: 120px; }
+  .catalog-item { grid-template-columns: 1fr; }
+  .catalog-item button { width: 100%; }
+}

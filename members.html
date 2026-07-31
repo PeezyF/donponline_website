@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Join DONPONLINE, claim 100 welcome Motion Coins, unlock game characters and access member-only drops.">
+  <meta name="theme-color" content="#070707">
+  <title>Motion Coins | DONPONLINE Members</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="members.css">
+</head>
+<body class="members-page">
+  <div class="noise"></div>
+
+  <header class="site-header scrolled">
+    <a class="brand" href="index.html" aria-label="DONPONLINE home">
+      <video class="brand-logo-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+        <source src="assets/videos/don-p-logo-fire-intro.mp4" type="video/mp4">
+      </video>
+      <span class="brand-text">DONPONLINE</span>
+    </a>
+    <nav class="member-nav" aria-label="Member navigation">
+      <a href="index.html#beats">Beats</a>
+      <a href="index.html">Main site</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="coin-hero">
+      <div class="coin-hero-copy">
+        <p class="eyebrow">DONPONLINE MEMBER CURRENCY</p>
+        <h1>MOTION<br><span>COINS.</span></h1>
+        <p>Unlock game characters, exclusive content, special access, digital drops, and more across the DONPONLINE universe.</p>
+        <div class="welcome-chip"><strong>+100</strong><span>Welcome coins<br>for every new member</span></div>
+      </div>
+      <div class="coin-orbit" aria-hidden="true">
+        <div class="coin-face"><span>DP</span><b>100</b></div>
+      </div>
+    </section>
+
+    <div id="system-notice" class="system-notice" role="status" hidden></div>
+
+    <section id="auth-section" class="member-section auth-section" aria-labelledby="auth-title">
+      <div class="member-section-heading">
+        <p class="eyebrow">ENTER THE INNER CIRCLE</p>
+        <h2 id="auth-title">CREATE YOUR<br>MEMBER ACCOUNT.</h2>
+        <p>Your first 100 Motion Coins are awarded once, automatically, when your account is created.</p>
+      </div>
+
+      <div class="auth-grid">
+        <form id="signup-form" class="member-form">
+          <div class="form-heading">
+            <span>01</span>
+            <div><strong>NEW MEMBER</strong><small>Claim your welcome coins</small></div>
+          </div>
+          <label>DISPLAY NAME
+            <input name="display_name" autocomplete="nickname" required placeholder="What should we call you?">
+          </label>
+          <label>EMAIL
+            <input name="email" type="email" autocomplete="email" required placeholder="you@example.com">
+          </label>
+          <label>PASSWORD
+            <input name="password" type="password" autocomplete="new-password" minlength="8" required placeholder="8 characters minimum">
+          </label>
+          <label class="terms-check">
+            <input name="terms" type="checkbox" required>
+            <span>I agree to the member and Motion Coins terms.</span>
+          </label>
+          <button type="submit">CREATE ACCOUNT + GET 100 COINS ↗</button>
+        </form>
+
+        <form id="signin-form" class="member-form">
+          <div class="form-heading">
+            <span>02</span>
+            <div><strong>MEMBER SIGN IN</strong><small>Open your wallet</small></div>
+          </div>
+          <label>EMAIL
+            <input name="email" type="email" autocomplete="email" required placeholder="you@example.com">
+          </label>
+          <label>PASSWORD
+            <input name="password" type="password" autocomplete="current-password" required placeholder="Your password">
+          </label>
+          <button type="submit">SIGN IN TO MY WALLET ↗</button>
+          <button id="forgot-password" class="text-button" type="button">Send a password reset email</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="wallet-section" class="member-section wallet-section" hidden aria-labelledby="wallet-title">
+      <div class="wallet-header">
+        <div>
+          <p class="eyebrow">YOUR MEMBER WALLET</p>
+          <h2 id="wallet-title">WELCOME, <span id="member-name">MEMBER</span>.</h2>
+          <p id="member-email"></p>
+        </div>
+        <button id="signout-button" class="outline-button" type="button">Sign out</button>
+      </div>
+
+      <div class="wallet-grid">
+        <article class="balance-card">
+          <span>AVAILABLE BALANCE</span>
+          <strong id="coin-balance">0</strong>
+          <b>MOTION COINS</b>
+          <small>Coins have no cash value and cannot be transferred.</small>
+        </article>
+        <article class="wallet-stat">
+          <span>LIFETIME EARNED</span>
+          <strong id="lifetime-earned">0</strong>
+        </article>
+        <article class="wallet-stat">
+          <span>LIFETIME SPENT</span>
+          <strong id="lifetime-spent">0</strong>
+        </article>
+      </div>
+
+      <div class="portal-grid">
+        <section class="portal-panel">
+          <div class="panel-heading">
+            <p class="eyebrow">POWER UP</p>
+            <h3>BUY MOTION COINS</h3>
+          </div>
+          <div class="pack-grid">
+            <button class="coin-pack" data-pack="starter" type="button">
+              <span>STARTER STACK</span><strong>500</strong><small>$4.99</small>
+            </button>
+            <button class="coin-pack featured" data-pack="power" type="button">
+              <span>POWER STACK</span><strong>1,200</strong><small>$9.99</small>
+            </button>
+            <button class="coin-pack" data-pack="vault" type="button">
+              <span>THE VAULT</span><strong>2,500</strong><small>$19.99</small>
+            </button>
+          </div>
+          <p class="purchase-note">Payments are securely processed by Stripe. Coins are added after payment confirmation.</p>
+        </section>
+
+        <section class="portal-panel">
+          <div class="panel-heading">
+            <p class="eyebrow">USE YOUR COINS</p>
+            <h3>UNLOCK THE UNIVERSE</h3>
+          </div>
+          <div id="catalog-grid" class="catalog-grid"></div>
+          <p id="catalog-empty" class="empty-state">Game characters and member-only drops will appear here as they are released.</p>
+        </section>
+      </div>
+
+      <section class="activity-panel">
+        <div class="panel-heading">
+          <p class="eyebrow">ACCOUNT HISTORY</p>
+          <h3>COIN ACTIVITY</h3>
+        </div>
+        <div id="activity-list" class="activity-list"></div>
+        <p id="activity-empty" class="empty-state">Your Motion Coins activity will show here.</p>
+      </section>
+    </section>
+
+    <section class="coin-terms">
+      <strong>MOTION COINS RULES</strong>
+      <p>Motion Coins are a closed digital reward currency for DONPONLINE. They are not cryptocurrency, cannot be exchanged for cash, and cannot be transferred between members. Purchased and promotional coins are used only for eligible DONPONLINE digital items, access, and experiences. No gambling or randomized paid rewards.</p>
+    </section>
+  </main>
+
+  <footer>
+    <a class="brand" href="index.html">
+      <span class="brand-mark">DP</span>
+      <span class="brand-text">DONPONLINE</span>
+    </a>
+    <p>© <span id="year"></span> DONPONLINE. ALL RIGHTS RESERVED.</p>
+    <a href="mailto:donp@donponline.com">MEMBER SUPPORT: DONP@DONPONLINE.COM</a>
+  </footer>
+
+  <div id="member-toast" class="member-toast" role="status" aria-live="polite"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-config.js"></script>
+  <script src="assets/js/members.js"></script>
+</body>
+</html>
