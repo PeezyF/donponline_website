@@ -38,7 +38,7 @@ Search `index.html` for `data-placeholder`. Replace each `href="#"` with the act
 
 Also replace:
 - `booking@donponline.com`
-- `business@donponline.com`
+- `donp@donponline.com`
 
 Connect the newsletter form to Mailchimp, Kit, Beehiiv, Substack, or another platform.
 
@@ -46,4 +46,4 @@ Connect the newsletter form to Mailchimp, Kit, Beehiiv, Substack, or another pla
 - Domain: `donponline.com`
 - Hosting: Netlify, Vercel, Squarespace custom-code area, Shopify, or traditional web hosting
 - Analytics: Google Analytics or Plausible
-- Email: `booking@donponline.com`, `business@donponline.com`
+- Email: `booking@donponline.com`, `donp@donponline.com`

@@ -90,12 +90,19 @@ document.querySelectorAll(".play-button[data-audio]").forEach(button => {
 
 beatAudio.addEventListener("ended", () => resetPlayButton(activePlayButton));
 
-document.querySelector(".newsletter-form").addEventListener("submit", (event) => {
-  event.preventDefault();
-  const email = document.getElementById("email").value.trim();
-  const subject = encodeURIComponent("DONPONLINE Access Request");
-  const body = encodeURIComponent(`Access request from: ${email}`);
-  window.location.href = `mailto:donpbeats@gmail.com?subject=${subject}&body=${body}`;
-});
+const membershipInterest = document.getElementById("membership-interest");
+const membershipOptions = document.getElementById("membership-options");
+const membershipLevels = document.querySelectorAll('input[name="membership_level"]');
+
+if (membershipInterest && membershipOptions) {
+  membershipInterest.addEventListener("change", () => {
+    const isJoining = membershipInterest.checked;
+    membershipOptions.hidden = !isJoining;
+    membershipLevels.forEach((level, index) => {
+      level.required = isJoining && index === 0;
+      if (!isJoining) level.checked = false;
+    });
+  });
+}
 
 document.getElementById("year").textContent = new Date().getFullYear();

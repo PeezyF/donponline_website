@@ -496,9 +496,80 @@ img { max-width: 100%; }
 .connect-section { background: #101010; text-align: center; }
 .connect-inner { max-width: 1050px; margin: auto; }
 .connect-inner h2 { font-size: clamp(70px, 10vw, 150px); }
-.newsletter-form { display: grid; grid-template-columns: 1fr auto; max-width: 720px; margin: 50px auto 35px; border-bottom: 1px solid var(--white); }
-.newsletter-form input { background: transparent; border: 0; color: var(--white); padding: 18px 0; outline: none; font-weight: 800; letter-spacing: .05em; }
-.newsletter-form button { background: transparent; border: 0; color: var(--acid); font-weight: 900; font-size: 11px; letter-spacing: .1em; cursor: pointer; }
+.connect-intro { max-width: 720px; margin: 22px auto 0; color: var(--muted); line-height: 1.7; }
+.access-form { max-width: 920px; margin: 50px auto 35px; text-align: left; }
+.access-fields { display: grid; grid-template-columns: repeat(2, 1fr); gap: 26px 30px; }
+.access-fields label { display: grid; gap: 10px; }
+.access-fields label > span, .membership-addon legend {
+  color: var(--acid);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .13em;
+}
+.access-fields input, .access-fields select, .access-fields textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: #171717;
+  color: var(--white);
+  padding: 17px 16px;
+  outline: none;
+  font: inherit;
+}
+.access-fields input:focus, .access-fields select:focus, .access-fields textarea:focus {
+  border-color: var(--acid);
+  box-shadow: 0 0 0 2px rgba(216,255,54,.16);
+}
+.access-fields textarea { resize: vertical; }
+.access-fields select { appearance: none; }
+.access-message { grid-column: 1 / -1; }
+.membership-addon { margin: 32px 0 0; padding: 0; border: 0; }
+.membership-addon legend { margin-bottom: 12px; }
+.membership-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 22px;
+  border: 1px solid var(--acid);
+  background: rgba(216,255,54,.06);
+  cursor: pointer;
+}
+.membership-toggle input, .consent-row input, .membership-grid input {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  accent-color: var(--acid);
+}
+.membership-toggle span, .membership-grid span { display: grid; gap: 6px; }
+.membership-toggle strong, .membership-grid strong { font-size: 13px; letter-spacing: .06em; }
+.membership-toggle small, .membership-grid small { color: var(--muted); line-height: 1.5; }
+.membership-options { padding: 24px; border: 1px solid var(--line); border-top: 0; }
+.membership-options > p:first-child { margin: 0 0 16px; font-weight: 800; }
+.membership-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.membership-grid label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 145px;
+  padding: 17px;
+  border: 1px solid var(--line);
+  cursor: pointer;
+}
+.membership-grid label:has(input:checked) { border-color: var(--acid); background: rgba(216,255,54,.08); }
+.membership-note { margin: 16px 0 0; color: var(--muted); font-size: 12px; }
+.consent-row { display: flex; align-items: flex-start; gap: 12px; margin: 24px 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.access-submit {
+  width: 100%;
+  min-height: 62px;
+  border: 1px solid var(--acid);
+  background: var(--acid);
+  color: var(--black);
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: .12em;
+  cursor: pointer;
+}
+.access-submit:hover { background: var(--white); border-color: var(--white); }
 .social-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; }
 .social-links a { font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: .08em; color: var(--muted); }
 .social-links a:hover { color: var(--acid); }
@@ -599,8 +670,10 @@ footer a:hover { color: var(--acid); }
   .knowledge-card b { display: none; }
   .about-statement { text-align: left; }
   .stats-grid { grid-template-columns: 1fr; }
-  .newsletter-form { grid-template-columns: 1fr; text-align: left; }
-  .newsletter-form button { text-align: left; padding: 0 0 16px; }
+  .access-fields, .membership-grid { grid-template-columns: 1fr; }
+  .access-message { grid-column: auto; }
+  .membership-grid label { min-height: auto; }
+  .membership-toggle, .membership-options { padding: 18px; }
   footer { flex-direction: column; text-align: center; }
 }
 

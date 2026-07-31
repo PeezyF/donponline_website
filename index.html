@@ -376,12 +376,82 @@
 
     <section id="connect" class="section connect-section">
       <div class="connect-inner reveal">
+        <p class="eyebrow">CONNECT DIRECTLY</p>
         <h2>FOR ACCESS<br><span>SLIDE INFO</span></h2>
+        <p class="connect-intro">Tell us who you are and what you want to tap into. For early drops, private updates, and members-only opportunities, add the Inner Circle to your request.</p>
 
-        <form class="newsletter-form" action="mailto:donpbeats@gmail.com" method="post">
-          <label class="sr-only" for="email">Email address</label>
-          <input id="email" name="email" type="email" placeholder="ENTER YOUR EMAIL" required>
-          <button type="submit">LOCK IN FOR ACCESS ↗</button>
+        <form class="access-form" action="https://formsubmit.co/donp@donponline.com" method="POST">
+          <input type="hidden" name="_subject" value="New DONPONLINE Access Request">
+          <input type="hidden" name="_template" value="table">
+          <input type="hidden" name="_captcha" value="false">
+
+          <div class="access-fields">
+            <label>
+              <span>NAME *</span>
+              <input id="access-name" name="name" type="text" autocomplete="name" placeholder="Your name" required>
+            </label>
+            <label>
+              <span>EMAIL *</span>
+              <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+            </label>
+            <label>
+              <span>PHONE</span>
+              <input id="access-phone" name="phone" type="tel" autocomplete="tel" placeholder="(404) 555-0123">
+            </label>
+            <label>
+              <span>I'M REACHING OUT ABOUT *</span>
+              <select id="access-interest" name="interest" required>
+                <option value="" selected disabled>Choose one</option>
+                <option>Music and new releases</option>
+                <option>Beats and production</option>
+                <option>Booking or appearances</option>
+                <option>Brand partnership</option>
+                <option>Music business and creator knowledge</option>
+                <option>Something else</option>
+              </select>
+            </label>
+            <label class="access-message">
+              <span>WHAT SHOULD WE KNOW?</span>
+              <textarea name="message" rows="4" placeholder="Share a few details about what you're looking for."></textarea>
+            </label>
+          </div>
+
+          <fieldset class="membership-addon">
+            <legend>MEMBERSHIP ADD-ON</legend>
+            <label class="membership-toggle">
+              <input id="membership-interest" name="membership_interest" type="checkbox" value="Yes — add me to the Inner Circle list">
+              <span>
+                <strong>ADD ME TO THE DONPONLINE INNER CIRCLE</strong>
+                <small>Get first access to drops, behind-the-scenes updates, events, and members-only opportunities.</small>
+              </span>
+            </label>
+
+            <div class="membership-options" id="membership-options" hidden>
+              <p>Which lane fits you best?</p>
+              <div class="membership-grid">
+                <label>
+                  <input type="radio" name="membership_level" value="Supporter">
+                  <span><strong>SUPPORTER</strong><small>New music, updates, and early announcements.</small></span>
+                </label>
+                <label>
+                  <input type="radio" name="membership_level" value="Creator">
+                  <span><strong>CREATOR</strong><small>Production, knowledge, and creator-focused access.</small></span>
+                </label>
+                <label>
+                  <input type="radio" name="membership_level" value="VIP">
+                  <span><strong>VIP</strong><small>Priority access to special drops and experiences.</small></span>
+                </label>
+              </div>
+              <p class="membership-note">No charge today. You’ll be contacted first when membership opens.</p>
+            </div>
+          </fieldset>
+
+          <label class="consent-row">
+            <input name="contact_permission" type="checkbox" value="Yes" required>
+            <span>I agree to receive email updates about my request and DONPONLINE. *</span>
+          </label>
+
+          <button class="access-submit" type="submit">SEND MY ACCESS REQUEST <span aria-hidden="true">↗</span></button>
         </form>
 
         <div class="social-links">
@@ -413,7 +483,7 @@
     <p>© <span id="year"></span> DONPONLINE. ALL RIGHTS RESERVED.</p>
     <div>
       <a href="https://www.instagram.com/donptrillville/" target="_blank" rel="noopener noreferrer">BOOKING: DM @DONPTRILLVILLE</a>
-      <a href="https://www.instagram.com/donptrillville/" target="_blank" rel="noopener noreferrer">BUSINESS: @DONPTRILLVILLE</a>
+      <a href="mailto:donp@donponline.com">BUSINESS: DONP@DONPONLINE.COM</a>
     </div>
   </footer>
 
