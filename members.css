@@ -98,6 +98,10 @@
 .coin-pack small { color: var(--acid); font-weight: 900; }
 .purchase-note, .empty-state { color: #918b87; font-size: 12px; line-height: 1.6; }
 .catalog-grid { display: grid; gap: 10px; }
+.unlock-benefits { display: grid; gap: 10px; margin-bottom: 18px; }
+.unlock-benefits article { display: grid; gap: 6px; padding: 16px 18px; border: 1px solid var(--line); background: #090909; }
+.unlock-benefits strong { color: var(--acid); font-size: 11px; letter-spacing: .08em; }
+.unlock-benefits span { color: #b9b3ae; font-size: 12px; line-height: 1.5; }
 .catalog-item { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: center; padding: 18px; border: 1px solid var(--line); }
 .catalog-item > div { display: grid; gap: 6px; }
 .catalog-item strong { font-size: 13px; }
