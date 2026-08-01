@@ -328,7 +328,10 @@
     });
   }
 
-  if (new URLSearchParams(window.location.search).get("purchase") === "success") {
+  const purchaseStatus = new URLSearchParams(window.location.search).get("purchase");
+  if (purchaseStatus === "success") {
     showToast("Payment received. Your Motion Coins will appear after confirmation.");
+  } else if (purchaseStatus === "error") {
+    showToast("Checkout could not be started. Please try again in a moment.");
   }
 })();

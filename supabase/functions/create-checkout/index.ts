@@ -67,29 +67,42 @@ Deno.serve(async (request) => {
     });
   }
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    customer_email: user.email,
-    client_reference_id: user.id,
-    line_items: [{
-      quantity: 1,
-      price_data: {
-        currency: "usd",
-        unit_amount: pack.amountCents,
-        product_data: {
-          name: pack.name,
-          description: "Closed digital currency for eligible DONPONLINE items and access."
+  let session;
+  try {
+    session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      customer_email: user.email,
+      client_reference_id: user.id,
+      line_items: [{
+        quantity: 1,
+        price_data: {
+          currency: "usd",
+          unit_amount: pack.amountCents,
+          product_data: {
+            name: pack.name,
+            description: "Closed digital currency for eligible DONPONLINE items and access.",
+            tax_code: "txcd_10000000"
+          }
         }
-      }
-    }],
-    metadata: {
-      user_id: user.id,
-      pack_key: packKey,
-      coins: String(pack.coins)
-    },
-    success_url: `${siteUrl}/members.html?purchase=success`,
-    cancel_url: `${siteUrl}/members.html?purchase=cancelled`
-  });
+      }],
+      metadata: {
+        user_id: user.id,
+        pack_key: packKey,
+        coins: String(pack.coins)
+      },
+      success_url: `${siteUrl}/members.html?purchase=success`,
+      cancel_url: `${siteUrl}/members.html?purchase=cancelled`
+    });
+  } catch (error) {
+    console.error("Stripe checkout session creation failed", error);
+    if (isFormPost) {
+      return Response.redirect(`${siteUrl}/members.html?purchase=error`, 303);
+    }
+    return Response.json({ error: "Checkout could not be started. Please try again." }, {
+      status: 502,
+      headers: corsHeaders
+    });
+  }
 
   if (isFormPost && session.url) {
     return Response.redirect(session.url, 303);
