@@ -15,6 +15,7 @@
   const walletSection = document.getElementById("wallet-section");
   const signupForm = document.getElementById("signup-form");
   const signinForm = document.getElementById("signin-form");
+  const resendConfirmation = document.getElementById("resend-confirmation");
   const notice = document.getElementById("system-notice");
   const toast = document.getElementById("member-toast");
   const catalogGrid = document.getElementById("catalog-grid");
@@ -186,6 +187,27 @@
     } else {
       showToast("Check your email to confirm your account and claim your 100 Motion Coins.");
     }
+  });
+
+  resendConfirmation.addEventListener("click", async () => {
+    if (!configured) {
+      showToast("Member accounts are being connected now.");
+      return;
+    }
+    const email = signupForm.elements.email.value.trim();
+    if (!email) {
+      showToast("Enter your signup email first.");
+      signupForm.elements.email.focus();
+      return;
+    }
+    resendConfirmation.disabled = true;
+    const { error } = await client.auth.resend({
+      type: "signup",
+      email,
+      options: { emailRedirectTo: `${window.location.origin}${window.location.pathname}` }
+    });
+    resendConfirmation.disabled = false;
+    showToast(error ? error.message : "Confirmation email sent again. Check spam too.");
   });
 
   signinForm.addEventListener("submit", async (event) => {

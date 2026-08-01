@@ -389,7 +389,8 @@
         <h2>FOR ACCESS<br><span>SLIDE INFO</span></h2>
         <p class="connect-intro">Tell us who you are and what you want to tap into. For early drops, private updates, and members-only opportunities, add the Inner Circle to your request.</p>
 
-        <form class="access-form" action="https://formsubmit.co/donp@donponline.com" method="POST">
+        <form class="access-form" id="access-form">
+          <input type="text" name="website" tabindex="-1" autocomplete="off" class="form-honeypot" aria-hidden="true">
           <input type="hidden" name="_subject" value="New DONPONLINE Access Request">
           <input type="hidden" name="_template" value="table">
           <input type="hidden" name="_captcha" value="false">
@@ -463,6 +464,7 @@
           </label>
 
           <button class="access-submit" type="submit">SEND MY ACCESS REQUEST <span aria-hidden="true">↗</span></button>
+          <p id="access-status" class="access-status" role="status" aria-live="polite"></p>
         </form>
 
         <div class="social-links">
@@ -499,6 +501,7 @@
   </footer>
 
   <div class="placeholder-toast" role="status" aria-live="polite"></div>
+  <script src="assets/js/supabase-config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

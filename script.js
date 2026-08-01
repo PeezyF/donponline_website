@@ -93,6 +93,8 @@ beatAudio.addEventListener("ended", () => resetPlayButton(activePlayButton));
 const membershipInterest = document.getElementById("membership-interest");
 const membershipOptions = document.getElementById("membership-options");
 const membershipLevels = document.querySelectorAll('input[name="membership_level"]');
+const accessForm = document.getElementById("access-form");
+const accessStatus = document.getElementById("access-status");
 
 if (membershipInterest && membershipOptions) {
   membershipInterest.addEventListener("change", () => {
@@ -102,6 +104,42 @@ if (membershipInterest && membershipOptions) {
       level.required = isJoining && index === 0;
       if (!isJoining) level.checked = false;
     });
+  });
+}
+
+if (accessForm && accessStatus) {
+  accessForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const submitButton = accessForm.querySelector('button[type="submit"]');
+    const data = new FormData(accessForm);
+    submitButton.disabled = true;
+    accessStatus.textContent = "Sending your request…";
+
+    try {
+      const config = window.DONPONLINE_CONFIG || {};
+      const response = await fetch(`${config.supabaseUrl}/functions/v1/access-request`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: config.supabasePublishableKey
+        },
+        body: JSON.stringify({
+          name: data.get("name"), email: data.get("email"), phone: data.get("phone"),
+          interest: data.get("interest"), message: data.get("message"), website: data.get("website"),
+          membership_interest: data.get("membership_interest") === "Yes — add me to the Inner Circle list",
+          membership_level: data.get("membership_level")
+        })
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Could not send request.");
+      accessForm.reset();
+      membershipOptions.hidden = true;
+      accessStatus.textContent = result.message;
+    } catch (error) {
+      accessStatus.textContent = error.message || "Could not send request. Please try again.";
+    } finally {
+      submitButton.disabled = false;
+    }
   });
 }
 
