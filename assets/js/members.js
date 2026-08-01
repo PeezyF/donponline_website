@@ -274,6 +274,18 @@
         showToast("Coin purchases are being connected now.");
         return;
       }
+      if (window.location.protocol === "file:") {
+        window.location.assign("https://donponline.com/members.html");
+        return;
+      }
+
+      const { data: sessionData } = await client.auth.getSession();
+      if (!sessionData.session) {
+        showToast("Sign in on the live site before buying Motion Coins.");
+        showAuth();
+        return;
+      }
+
       button.disabled = true;
       const { data, error } = await client.functions.invoke(
         config.checkoutFunction || "create-checkout",
@@ -281,7 +293,12 @@
       );
       button.disabled = false;
       if (error || !data?.url) {
-        showToast(error?.message || "Checkout could not be started.");
+        let message = data?.error || error?.message || "Checkout could not be started.";
+        if (error?.context?.json) {
+          const details = await error.context.clone().json().catch(() => null);
+          message = details?.error || message;
+        }
+        showToast(message);
         return;
       }
       window.location.assign(data.url);

@@ -4,7 +4,7 @@ project_id = "nxgosvbopeefqubmmych"
 verify_jwt = false
 
 [functions.create-checkout]
-verify_jwt = true
+verify_jwt = false
 
 [functions.access-request]
 verify_jwt = false
