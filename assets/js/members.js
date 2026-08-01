@@ -287,21 +287,27 @@
       }
 
       button.disabled = true;
-      const { data, error } = await client.functions.invoke(
-        config.checkoutFunction || "create-checkout",
-        { body: { packKey: button.dataset.pack } }
-      );
-      button.disabled = false;
-      if (error || !data?.url) {
-        let message = data?.error || error?.message || "Checkout could not be started.";
-        if (error?.context?.json) {
-          const details = await error.context.clone().json().catch(() => null);
-          message = details?.error || message;
+      try {
+        const functionName = config.checkoutFunction || "create-checkout";
+        const response = await fetch(`${config.supabaseUrl}/functions/v1/${functionName}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: config.supabasePublishableKey,
+            Authorization: `Bearer ${sessionData.session.access_token}`
+          },
+          body: JSON.stringify({ packKey: button.dataset.pack })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.url) {
+          throw new Error(data.error || `Checkout could not be started (${response.status}).`);
         }
-        showToast(message);
-        return;
+        window.location.assign(data.url);
+      } catch (error) {
+        showToast(error.message || "Checkout could not be started. Please try again.");
+      } finally {
+        button.disabled = false;
       }
-      window.location.assign(data.url);
     });
   });
 
