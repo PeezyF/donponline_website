@@ -21,7 +21,21 @@ Deno.serve(async (request) => {
     });
   }
 
-  const authorization = request.headers.get("Authorization");
+  const contentType = request.headers.get("content-type") ?? "";
+  const isFormPost = contentType.includes("application/x-www-form-urlencoded") ||
+    contentType.includes("multipart/form-data");
+  let authorization = request.headers.get("Authorization");
+  let packKey = "";
+
+  if (isFormPost) {
+    const form = await request.formData();
+    const accessToken = form.get("access_token");
+    if (typeof accessToken === "string" && accessToken) {
+      authorization = `Bearer ${accessToken}`;
+    }
+    packKey = typeof form.get("packKey") === "string" ? String(form.get("packKey")) : "";
+  }
+
   if (!authorization) {
     return Response.json({ error: "Sign in to buy Motion Coins" }, {
       status: 401,
@@ -41,8 +55,10 @@ Deno.serve(async (request) => {
     });
   }
 
-  const body = await request.json().catch(() => ({}));
-  const packKey = typeof body.packKey === "string" ? body.packKey : "";
+  if (!isFormPost) {
+    const body = await request.json().catch(() => ({}));
+    packKey = typeof body.packKey === "string" ? body.packKey : "";
+  }
   const pack = coinPacks[packKey];
   if (!pack) {
     return Response.json({ error: "Unknown Motion Coins pack" }, {
@@ -74,6 +90,10 @@ Deno.serve(async (request) => {
     success_url: `${siteUrl}/members.html?purchase=success`,
     cancel_url: `${siteUrl}/members.html?purchase=cancelled`
   });
+
+  if (isFormPost && session.url) {
+    return Response.redirect(session.url, 303);
+  }
 
   return Response.json({ url: session.url }, { headers: corsHeaders });
 });

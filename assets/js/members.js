@@ -289,23 +289,26 @@
       button.disabled = true;
       try {
         const functionName = config.checkoutFunction || "create-checkout";
-        const response = await fetch(`${config.supabaseUrl}/functions/v1/${functionName}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: config.supabasePublishableKey,
-            Authorization: `Bearer ${sessionData.session.access_token}`
-          },
-          body: JSON.stringify({ packKey: button.dataset.pack })
+        const checkoutForm = document.createElement("form");
+        checkoutForm.method = "POST";
+        checkoutForm.action = `${config.supabaseUrl}/functions/v1/${functionName}`;
+
+        const fields = {
+          access_token: sessionData.session.access_token,
+          packKey: button.dataset.pack
+        };
+        Object.entries(fields).forEach(([name, value]) => {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = name;
+          input.value = value;
+          checkoutForm.append(input);
         });
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok || !data.url) {
-          throw new Error(data.error || `Checkout could not be started (${response.status}).`);
-        }
-        window.location.assign(data.url);
+
+        document.body.append(checkoutForm);
+        checkoutForm.submit();
       } catch (error) {
         showToast(error.message || "Checkout could not be started. Please try again.");
-      } finally {
         button.disabled = false;
       }
     });
