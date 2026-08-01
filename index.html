@@ -385,9 +385,9 @@
 
     <section id="connect" class="section connect-section">
       <div class="connect-inner reveal">
-        <p class="eyebrow">CONNECT DIRECTLY</p>
-        <h2>FOR ACCESS<br><span>SLIDE INFO</span></h2>
-        <p class="connect-intro">Tell us who you are and what you want to tap into. For early drops, private updates, and members-only opportunities, add the Inner Circle to your request.</p>
+        <p class="eyebrow">ONE FORM. EVERYTHING DONPONLINE.</p>
+        <h2>TAP IN<br><span>RIGHT HERE</span></h2>
+        <p class="connect-intro">Send Don P your information and, if you want the full member experience, create your Motion Coins account in the same form.</p>
 
         <form class="access-form" id="access-form">
           <input type="text" name="website" tabindex="-1" autocomplete="off" class="form-honeypot" aria-hidden="true">
@@ -427,12 +427,12 @@
           </div>
 
           <fieldset class="membership-addon">
-            <legend>MEMBERSHIP ADD-ON</legend>
+            <legend>OPTIONAL MOTION COINS ACCOUNT</legend>
             <label class="membership-toggle">
               <input id="membership-interest" name="membership_interest" type="checkbox" value="Yes — add me to the Inner Circle list">
               <span>
-                <strong>ADD ME TO THE DONPONLINE INNER CIRCLE</strong>
-                <small>Get first access to drops, behind-the-scenes updates, events, members-only opportunities, and 100 Motion Coins when your member account opens.</small>
+                <strong>YES — CREATE MY MEMBER ACCOUNT + GIVE ME 100 COINS</strong>
+                <small>Use the same name and email above. We’ll create your wallet and send one account-confirmation email.</small>
               </span>
             </label>
 
@@ -452,7 +452,15 @@
                   <span><strong>VIP</strong><small>Priority access to special drops and experiences.</small></span>
                 </label>
               </div>
-              <p class="membership-note">No charge today. You’ll be contacted first when membership opens.</p>
+              <label class="membership-password">
+                <span>CREATE A PASSWORD *</span>
+                <input id="membership-password" name="membership_password" type="password" autocomplete="new-password" minlength="8" placeholder="8 characters minimum">
+              </label>
+              <label class="coin-terms">
+                <input id="coin-terms" name="coin_terms" type="checkbox">
+                <span>I agree to the member and Motion Coins terms.</span>
+              </label>
+              <p class="membership-note">No charge today. Confirm your email to activate your wallet and receive 100 Motion Coins.</p>
             </div>
           </fieldset>
 
@@ -463,7 +471,7 @@
             <span>I agree to receive email updates about my request and DONPONLINE. *</span>
           </label>
 
-          <button class="access-submit" type="submit">SEND MY ACCESS REQUEST <span aria-hidden="true">↗</span></button>
+          <button class="access-submit" type="submit"><span id="access-submit-label">SEND MY ACCESS REQUEST</span> <span aria-hidden="true">↗</span></button>
           <p id="access-status" class="access-status" role="status" aria-live="polite"></p>
         </form>
 
@@ -501,7 +509,8 @@
   </footer>
 
   <div class="placeholder-toast" role="status" aria-live="polite"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-config.js"></script>
-  <script src="script.js"></script>
+  <script src="script.js?v=unified-signup-1"></script>
 </body>
 </html>

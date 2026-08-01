@@ -93,8 +93,11 @@ beatAudio.addEventListener("ended", () => resetPlayButton(activePlayButton));
 const membershipInterest = document.getElementById("membership-interest");
 const membershipOptions = document.getElementById("membership-options");
 const membershipLevels = document.querySelectorAll('input[name="membership_level"]');
+const membershipPassword = document.getElementById("membership-password");
+const coinTerms = document.getElementById("coin-terms");
 const accessForm = document.getElementById("access-form");
 const accessStatus = document.getElementById("access-status");
+const accessSubmitLabel = document.getElementById("access-submit-label");
 
 if (membershipInterest && membershipOptions) {
   membershipInterest.addEventListener("change", () => {
@@ -104,6 +107,15 @@ if (membershipInterest && membershipOptions) {
       level.required = isJoining && index === 0;
       if (!isJoining) level.checked = false;
     });
+    membershipPassword.required = isJoining;
+    coinTerms.required = isJoining;
+    if (!isJoining) {
+      membershipPassword.value = "";
+      coinTerms.checked = false;
+    }
+    accessSubmitLabel.textContent = isJoining
+      ? "SEND REQUEST + CREATE MY 100-COIN ACCOUNT"
+      : "SEND MY ACCESS REQUEST";
   });
 }
 
@@ -112,11 +124,30 @@ if (accessForm && accessStatus) {
     event.preventDefault();
     const submitButton = accessForm.querySelector('button[type="submit"]');
     const data = new FormData(accessForm);
+    const wantsMembership = data.get("membership_interest") === "Yes — add me to the Inner Circle list";
     submitButton.disabled = true;
-    accessStatus.textContent = "Sending your request…";
+    accessStatus.textContent = wantsMembership
+      ? "Sending your request and creating your Motion Coins account…"
+      : "Sending your request…";
 
     try {
       const config = window.DONPONLINE_CONFIG || {};
+      let membershipError = null;
+
+      if (wantsMembership) {
+        if (!window.supabase?.createClient) throw new Error("Member signup could not load. Please refresh and try again.");
+        const authClient = window.supabase.createClient(config.supabaseUrl, config.supabasePublishableKey);
+        const { error } = await authClient.auth.signUp({
+          email: String(data.get("email") || "").trim(),
+          password: String(data.get("membership_password") || ""),
+          options: {
+            data: { display_name: String(data.get("name") || "").trim() },
+            emailRedirectTo: `${window.location.origin}/members.html`
+          }
+        });
+        membershipError = error;
+      }
+
       const response = await fetch(`${config.supabaseUrl}/functions/v1/access-request`, {
         method: "POST",
         headers: {
@@ -126,15 +157,19 @@ if (accessForm && accessStatus) {
         body: JSON.stringify({
           name: data.get("name"), email: data.get("email"), phone: data.get("phone"),
           interest: data.get("interest"), message: data.get("message"), website: data.get("website"),
-          membership_interest: data.get("membership_interest") === "Yes — add me to the Inner Circle list",
+          membership_interest: wantsMembership,
           membership_level: data.get("membership_level")
         })
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Could not send request.");
+      if (membershipError) throw new Error(`Your request was sent, but the member account needs attention: ${membershipError.message}`);
       accessForm.reset();
       membershipOptions.hidden = true;
-      accessStatus.textContent = result.message;
+      accessSubmitLabel.textContent = "SEND MY ACCESS REQUEST";
+      accessStatus.textContent = wantsMembership
+        ? "You’re in. Check your email to confirm your member account and activate 100 Motion Coins."
+        : result.message;
     } catch (error) {
       accessStatus.textContent = error.message || "Could not send request. Please try again.";
     } finally {
