@@ -495,8 +495,7 @@ img { max-width: 100%; }
 
 .unlocks-section { background: #090909; }
 .homepage-unlocks { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-top: 50px; }
-.homepage-unlocks article { grid-column: span 2; min-height: 220px; display: flex; flex-direction: column; padding: 26px; border: 1px solid var(--line); background: #101010; }
-.homepage-unlocks article:nth-child(4), .homepage-unlocks article:nth-child(5) { grid-column: span 3; }
+.homepage-unlocks article { grid-column: span 3; min-height: 220px; display: flex; flex-direction: column; padding: 26px; border: 1px solid var(--line); background: #101010; }
 .homepage-unlocks span { margin-bottom: auto; color: var(--acid); font-family: "Anton", sans-serif; font-size: 34px; }
 .homepage-unlocks strong { margin-top: 30px; font-size: 14px; letter-spacing: .06em; }
 .homepage-unlocks p { margin: 10px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
@@ -696,7 +695,7 @@ footer a:hover { color: var(--acid); }
   .stats-grid { grid-template-columns: 1fr; }
   .access-fields, .membership-grid { grid-template-columns: 1fr; }
   .homepage-unlocks { grid-template-columns: 1fr; }
-  .homepage-unlocks article, .homepage-unlocks article:nth-child(4), .homepage-unlocks article:nth-child(5) { grid-column: auto; min-height: 190px; }
+  .homepage-unlocks article { grid-column: auto; min-height: 190px; }
   .access-message { grid-column: auto; }
   .membership-grid label { min-height: auto; }
   .membership-toggle, .membership-options { padding: 18px; }
