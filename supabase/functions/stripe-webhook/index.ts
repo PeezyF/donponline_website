@@ -25,7 +25,7 @@ Deno.serve(async (request) => {
     event = await stripe.webhooks.constructEventAsync(
       await request.text(),
       signature,
-      Deno.env.get("STRIPE_WEBHOOK_SECRET")!,
+      Deno.env.get("STRIPE_WEBHOOK_SECRET")!.trim(),
       undefined,
       cryptoProvider
     );
@@ -51,7 +51,7 @@ Deno.serve(async (request) => {
   if (
     !userId ||
     !pack ||
-    session.amount_total !== pack.amountCents ||
+    session.amount_subtotal !== pack.amountCents ||
     session.currency?.toLowerCase() !== "usd"
   ) {
     return new Response("Purchase metadata did not match a coin pack", { status: 400 });
