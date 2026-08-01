@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#070707">
+  <title>Redemptions Admin | DONPONLINE</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="members.css?v=redemptions-1">
+</head>
+<body class="members-page admin-page">
+  <div class="noise"></div>
+  <header class="site-header">
+    <a class="brand" href="index.html"><span class="brand-mark">DP</span><span class="brand-text">DONPONLINE</span></a>
+    <nav class="member-nav"><a href="members.html">Member wallet</a><a href="index.html">Main site</a></nav>
+  </header>
+
+  <main class="admin-main">
+    <section class="admin-hero">
+      <p class="eyebrow">OWNER CONTROL CENTER</p>
+      <h1>REDEMPTION<br><span>REQUESTS.</span></h1>
+      <p>Review Motion Coins requests, update members, and refund coins when an experience cannot be fulfilled.</p>
+    </section>
+
+    <section id="admin-auth" class="admin-auth-panel">
+      <h2>OWNER SIGN IN</h2>
+      <form id="admin-signin" class="member-form">
+        <label>EMAIL<input name="email" type="email" autocomplete="email" required></label>
+        <label>PASSWORD<input name="password" type="password" autocomplete="current-password" required></label>
+        <button type="submit">OPEN REDEMPTIONS ↗</button>
+      </form>
+    </section>
+
+    <section id="admin-dashboard" hidden>
+      <div class="admin-toolbar">
+        <div><p class="eyebrow">LIVE QUEUE</p><h2>MANAGE REQUESTS</h2></div>
+        <div><button id="admin-refresh" class="outline-button" type="button">Refresh</button><button id="admin-signout" class="outline-button" type="button">Sign out</button></div>
+      </div>
+      <div id="admin-redemptions" class="admin-redemptions"></div>
+      <p id="admin-empty" class="empty-state">No redemption requests yet.</p>
+    </section>
+  </main>
+
+  <div id="admin-toast" class="member-toast" role="status" aria-live="polite"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-config.js"></script>
+  <script src="assets/js/redemptions-admin.js?v=1"></script>
+</body>
+</html>

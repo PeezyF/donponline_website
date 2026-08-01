@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.access-request]
 verify_jwt = false
+
+[functions.redemption-notify]
+verify_jwt = false

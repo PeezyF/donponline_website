@@ -26,6 +26,7 @@
     <nav class="member-nav" aria-label="Member navigation">
       <a href="index.html#beats">Beats</a>
       <a href="index.html">Main site</a>
+      <a id="admin-link" href="redemptions-admin.html" hidden>Redemptions</a>
     </nav>
   </header>
 
@@ -152,6 +153,12 @@
           </div>
           <div id="catalog-grid" class="catalog-grid"></div>
           <p id="catalog-empty" class="empty-state">New Motion Coins rewards will appear here as they are released.</p>
+          <div class="request-status-heading">
+            <strong>YOUR REDEMPTION REQUESTS</strong>
+            <span>Track reviews, consultations, invitations, and performance submissions.</span>
+          </div>
+          <div id="redemption-list" class="redemption-list"></div>
+          <p id="redemption-empty" class="empty-state">Your submitted reward requests will appear here.</p>
         </section>
       </div>
 
@@ -180,9 +187,33 @@
     <a href="mailto:donp@donponline.com">MEMBER SUPPORT: DONP@DONPONLINE.COM</a>
   </footer>
 
+  <dialog id="redemption-dialog" class="redemption-dialog">
+    <form id="redemption-form" method="dialog">
+      <button class="dialog-close" type="button" aria-label="Close redemption form">×</button>
+      <p class="eyebrow">SPEND MOTION COINS</p>
+      <h2 id="redemption-title">REDEEM REWARD</h2>
+      <p id="redemption-price" class="redemption-price"></p>
+      <input id="redemption-item-key" name="item_key" type="hidden">
+      <label>MUSIC, PROFILE, OR PORTFOLIO LINK
+        <input name="music_link" type="url" placeholder="https://...">
+      </label>
+      <label>PHONE NUMBER
+        <input name="phone" type="tel" autocomplete="tel" placeholder="Best number to reach you">
+      </label>
+      <label>GOALS / WHAT SHOULD DON P KNOW? *
+        <textarea name="goals" rows="5" maxlength="2000" required placeholder="Tell us what you want feedback on or what opportunity you are looking for."></textarea>
+      </label>
+      <label>AVAILABILITY
+        <input name="availability" type="text" maxlength="300" placeholder="Best days, times, or important dates">
+      </label>
+      <p class="redemption-disclaimer">Coins are deducted when you submit. Event invitations and performance placements are consideration requests and are not guaranteed. Requests that cannot be fulfilled may be refunded by DONPONLINE.</p>
+      <button class="redemption-submit" type="submit">CONFIRM &amp; SPEND COINS ↗</button>
+    </form>
+  </dialog>
+
   <div id="member-toast" class="member-toast" role="status" aria-live="polite"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-config.js"></script>
-  <script src="assets/js/members.js?v=checkout-fix-4"></script>
+  <script src="assets/js/members.js?v=redemptions-1"></script>
 </body>
 </html>

@@ -20,7 +20,12 @@
   const toast = document.getElementById("member-toast");
   const catalogGrid = document.getElementById("catalog-grid");
   const activityList = document.getElementById("activity-list");
+  const redemptionList = document.getElementById("redemption-list");
+  const redemptionDialog = document.getElementById("redemption-dialog");
+  const redemptionForm = document.getElementById("redemption-form");
+  let selectedRedemptionItem = null;
   let toastTimer;
+  const ownerEmails = new Set(["donp@donponline.com", "donpbeats@gmail.com"]);
 
   document.getElementById("year").textContent = new Date().getFullYear();
 
@@ -61,9 +66,67 @@
     walletSection.hidden = false;
   };
 
-  const renderCatalog = (items, unlocks, balance) => {
+  const renderRedemptions = (requests) => {
+    redemptionList.replaceChildren();
+    document.getElementById("redemption-empty").hidden = requests.length > 0;
+    requests.forEach((request) => {
+      const row = document.createElement("article");
+      const copy = document.createElement("div");
+      const title = document.createElement("strong");
+      const date = document.createElement("small");
+      const status = document.createElement("span");
+      row.className = "redemption-row";
+      title.textContent = request.catalog_items?.title || request.item_key;
+      date.textContent = `Submitted ${formatDate(request.created_at)}${request.admin_notes ? ` · ${request.admin_notes}` : ""}`;
+      status.className = "redemption-status";
+      status.textContent = request.status;
+      copy.append(title, date);
+      row.append(copy, status);
+      redemptionList.append(row);
+    });
+  };
+
+  const notifyRedemption = async (requestId) => {
+    if (!requestId) return;
+    try {
+      await client.functions.invoke("redemption-notify", { body: { request_id: requestId } });
+    } catch (error) {
+      console.warn("Redemption saved; email notification will need review", error);
+    }
+  };
+
+  const redeemItem = async (item, details = {}) => {
+    const { data, error } = await client.rpc("redeem_catalog_item", {
+      p_item_key: item.item_key,
+      p_details: details
+    });
+    if (error) throw error;
+    if (data?.status === "already_pending" || data?.status === "already_unlocked") {
+      showToast(data.message);
+      return data;
+    }
+    showToast(data?.message || `${item.title} redeemed.`);
+    notifyRedemption(data?.request_id);
+    await loadMemberData();
+    return data;
+  };
+
+  const openRedemptionForm = (item) => {
+    selectedRedemptionItem = item;
+    redemptionForm.reset();
+    document.getElementById("redemption-item-key").value = item.item_key;
+    document.getElementById("redemption-title").textContent = item.title;
+    document.getElementById("redemption-price").textContent = `${item.price_coins.toLocaleString()} MOTION COINS`;
+    redemptionDialog.showModal();
+  };
+
+  const renderCatalog = (items, unlocks, requests, balance) => {
     catalogGrid.replaceChildren();
     const unlockedKeys = new Set(unlocks.map((unlock) => unlock.item_key));
+    const activeRequestKeys = new Set(
+      requests.filter((request) => ["pending", "approved", "scheduled"].includes(request.status))
+        .map((request) => request.item_key)
+    );
     document.getElementById("catalog-empty").hidden = items.length > 0;
 
     items.forEach((item) => {
@@ -74,28 +137,30 @@
       const description = document.createElement("small");
       const button = document.createElement("button");
       const unlocked = unlockedKeys.has(item.item_key);
+      const activeRequest = activeRequestKeys.has(item.item_key);
+      const requiresRequest = ["access", "product"].includes(item.item_type);
 
       title.textContent = item.title;
       description.textContent = item.description;
       button.type = "button";
-      button.textContent = unlocked ? "UNLOCKED" : `${item.price_coins.toLocaleString()} COINS`;
-      button.disabled = unlocked || balance < item.price_coins;
-      if (!unlocked && balance < item.price_coins) {
+      button.textContent = unlocked ? "UNLOCKED" : activeRequest ? "REQUEST ACTIVE" : `${item.price_coins.toLocaleString()} COINS`;
+      button.disabled = unlocked || activeRequest || balance < item.price_coins;
+      if (!unlocked && !activeRequest && balance < item.price_coins) {
         button.title = "You need more Motion Coins";
       }
 
       button.addEventListener("click", async () => {
-        button.disabled = true;
-        const { data, error } = await client.rpc("unlock_catalog_item", {
-          p_item_key: item.item_key
-        });
-        if (error) {
-          showToast(error.message || "This item could not be unlocked.");
-          button.disabled = false;
+        if (requiresRequest) {
+          openRedemptionForm(item);
           return;
         }
-        showToast(data?.message || `${item.title} unlocked.`);
-        await loadMemberData();
+        button.disabled = true;
+        try {
+          await redeemItem(item);
+        } catch (error) {
+          showToast(error.message || "This item could not be unlocked.");
+          button.disabled = false;
+        }
       });
 
       copy.append(title, description);
@@ -133,12 +198,13 @@
       return;
     }
 
-    const [profileResult, walletResult, ledgerResult, catalogResult, unlockResult] = await Promise.all([
+    const [profileResult, walletResult, ledgerResult, catalogResult, unlockResult, redemptionResult] = await Promise.all([
       client.from("profiles").select("display_name").eq("id", user.id).single(),
       client.from("wallets").select("balance,lifetime_earned,lifetime_spent").eq("user_id", user.id).single(),
       client.from("coin_ledger").select("amount,entry_type,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20),
       client.from("catalog_items").select("item_key,title,description,price_coins,item_type").eq("active", true).order("sort_order"),
-      client.from("member_unlocks").select("item_key").eq("user_id", user.id)
+      client.from("member_unlocks").select("item_key").eq("user_id", user.id),
+      client.from("redemption_requests").select("id,item_key,status,created_at,admin_notes,catalog_items(title)").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20)
     ]);
 
     if (walletResult.error) {
@@ -150,10 +216,12 @@
     document.getElementById("member-name").textContent =
       profileResult.data?.display_name || user.email.split("@")[0];
     document.getElementById("member-email").textContent = user.email;
+    document.getElementById("admin-link").hidden = !ownerEmails.has(user.email.toLowerCase());
     document.getElementById("coin-balance").textContent = wallet.balance.toLocaleString();
     document.getElementById("lifetime-earned").textContent = wallet.lifetime_earned.toLocaleString();
     document.getElementById("lifetime-spent").textContent = wallet.lifetime_spent.toLocaleString();
-    renderCatalog(catalogResult.data || [], unlockResult.data || [], wallet.balance);
+    renderCatalog(catalogResult.data || [], unlockResult.data || [], redemptionResult.data || [], wallet.balance);
+    renderRedemptions(redemptionResult.data || []);
     renderActivity(ledgerResult.data || []);
     showWallet();
   }
@@ -266,6 +334,31 @@
     await client.auth.signOut();
     showAuth();
     showToast("You are signed out.");
+  });
+
+  document.querySelector(".dialog-close").addEventListener("click", () => redemptionDialog.close());
+  redemptionDialog.addEventListener("click", (event) => {
+    if (event.target === redemptionDialog) redemptionDialog.close();
+  });
+  redemptionForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!selectedRedemptionItem) return;
+    const formData = new FormData(redemptionForm);
+    const submitButton = redemptionForm.querySelector(".redemption-submit");
+    submitButton.disabled = true;
+    try {
+      await redeemItem(selectedRedemptionItem, {
+        music_link: String(formData.get("music_link") || "").trim().slice(0, 1000),
+        phone: String(formData.get("phone") || "").trim().slice(0, 100),
+        goals: String(formData.get("goals") || "").trim().slice(0, 2000),
+        availability: String(formData.get("availability") || "").trim().slice(0, 300)
+      });
+      redemptionDialog.close();
+    } catch (error) {
+      showToast(error.message || "This reward could not be redeemed.");
+    } finally {
+      submitButton.disabled = false;
+    }
   });
 
   document.querySelectorAll(".coin-pack").forEach((button) => {
