@@ -164,17 +164,24 @@
       showToast("Member accounts are being connected now.");
       return;
     }
-    setLoading(signupForm, true);
     const formData = new FormData(signupForm);
-    const { data, error } = await client.auth.signUp({
-      email: formData.get("email").trim(),
-      password: formData.get("password"),
-      options: {
-        data: { display_name: formData.get("display_name").trim() },
-        emailRedirectTo: `${window.location.origin}${window.location.pathname}`
-      }
-    });
-    setLoading(signupForm, false);
+    setLoading(signupForm, true);
+    let data;
+    let error;
+    try {
+      ({ data, error } = await client.auth.signUp({
+        email: String(formData.get("email") || "").trim(),
+        password: String(formData.get("password") || ""),
+        options: {
+          data: { display_name: String(formData.get("display_name") || "").trim() },
+          emailRedirectTo: `${window.location.origin}${window.location.pathname}`
+        }
+      }));
+    } catch (requestError) {
+      error = requestError;
+    } finally {
+      setLoading(signupForm, false);
+    }
 
     if (error) {
       showToast(error.message);
@@ -216,13 +223,19 @@
       showToast("Member accounts are being connected now.");
       return;
     }
-    setLoading(signinForm, true);
     const formData = new FormData(signinForm);
-    const { error } = await client.auth.signInWithPassword({
-      email: formData.get("email").trim(),
-      password: formData.get("password")
-    });
-    setLoading(signinForm, false);
+    setLoading(signinForm, true);
+    let error;
+    try {
+      ({ error } = await client.auth.signInWithPassword({
+        email: String(formData.get("email") || "").trim(),
+        password: String(formData.get("password") || "")
+      }));
+    } catch (requestError) {
+      error = requestError;
+    } finally {
+      setLoading(signinForm, false);
+    }
     if (error) {
       showToast(error.message);
       return;
