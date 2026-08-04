@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="Target Practice — the official Target Practice 4 arcade game from Don P." />
+  <meta name="theme-color" content="#070707" />
+  <title>Target Practice | DONPONLINE</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Inter:wght@500;700;800&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="target-practice.css" />
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="game-header">
+    <a class="game-brand" href="index.html" aria-label="Back to DONPONLINE">
+      <video autoplay muted loop playsinline aria-hidden="true">
+        <source src="assets/videos/don-p-logo-fire-intro.mp4" type="video/mp4" />
+      </video>
+      <span>DONPONLINE</span>
+    </a>
+    <a class="exit-link" href="index.html#music">Exit game</a>
+  </header>
+
+  <main class="game-shell">
+    <section class="game-copy" aria-labelledby="game-title">
+      <p class="kicker">DON P PRESENTS</p>
+      <h1 id="game-title">TARGET<br><span>PRACTICE</span></h1>
+      <p class="game-subtitle">Tap every OPP before they disappear. Stack your streak. Set the high score.</p>
+
+      <div class="prize-chip">
+        <span>5</span>
+        <div><strong>5 COINS EVERY ROUND</strong><small>Reach 2,000 points · members only</small></div>
+      </div>
+
+      <div class="game-stats" aria-label="Game statistics">
+        <div><span>SCORE</span><strong id="score">0000</strong></div>
+        <div><span>TIME</span><strong id="time">30</strong></div>
+        <div><span>STREAK</span><strong id="streak">0×</strong></div>
+        <div><span>BEST</span><strong id="best">0000</strong></div>
+      </div>
+    </section>
+
+    <section class="range-wrap" aria-label="Target Practice game area">
+      <div id="range" class="range" tabindex="0">
+        <div class="range-grid" aria-hidden="true"></div>
+        <div class="range-label" aria-hidden="true">TP4 // LIVE RANGE</div>
+        <div class="prize-meter" aria-label="Progress toward 5 Motion Coin prize">
+          <span id="prize-progress"></span>
+          <b id="prize-meter-label">0 / 2,000</b>
+        </div>
+
+        <div id="start-screen" class="game-screen">
+          <p>THE RANGE IS OPEN</p>
+          <h2>READY?</h2>
+          <p class="instructions">30 seconds. Tap or click the targets. Missing breaks your streak.</p>
+          <button id="start-button" class="primary-button" type="button">Start round</button>
+        </div>
+
+        <div id="end-screen" class="game-screen" hidden>
+          <p>ROUND COMPLETE</p>
+          <h2 id="final-score">0000</h2>
+          <div class="results">
+            <span>ACCURACY <b id="accuracy">0%</b></span>
+            <span>BEST STREAK <b id="best-streak">0×</b></span>
+          </div>
+          <p id="result-message" class="instructions"></p>
+          <div id="rank-status" class="rank-status" aria-live="polite"></div>
+          <div id="reward-status" class="reward-status" aria-live="polite"></div>
+          <button id="replay-button" class="primary-button" type="button">Run it back</button>
+        </div>
+
+        <div id="countdown" class="countdown" aria-live="assertive"></div>
+        <div id="callout" class="callout" aria-live="polite"></div>
+        <div id="crosshair" class="crosshair" aria-hidden="true"><i></i></div>
+      </div>
+
+      <div class="range-controls">
+        <button id="sound-button" type="button" aria-pressed="false">♪ Sound off</button>
+        <span>Targets are fictional game symbols.</span>
+      </div>
+    </section>
+  </main>
+
+  <section class="leaderboard-section" aria-labelledby="leaderboard-title">
+    <div class="leaderboard-heading">
+      <div>
+        <p class="kicker">THE ONES TO BEAT</p>
+        <h2 id="leaderboard-title">TOP<br><span>SHOOTERS</span></h2>
+      </div>
+      <div class="leaderboard-copy">
+        <p>Only your highest score stays on the board. Keep running it back until your name reaches the top.</p>
+        <p id="leaderboard-challenge" class="leaderboard-challenge" aria-live="polite">Loading the competition…</p>
+      </div>
+    </div>
+
+    <div class="leaderboard-card">
+      <div class="leaderboard-labels" aria-hidden="true">
+        <span>RANK / PLAYER</span><span>ACCURACY</span><span>STREAK</span><span>HIGH SCORE</span>
+      </div>
+      <ol id="leaderboard-list" class="leaderboard-list" aria-label="Target Practice high scores">
+        <li class="leaderboard-empty">Loading leaderboard…</li>
+      </ol>
+      <div class="leaderboard-footer">
+        <span>BEST SCORE PER MEMBER</span>
+        <a id="leaderboard-signin" href="members.html">Sign in to join the board ↗</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>TARGET PRACTICE 4</span>
+    <div>
+      <a href="https://open.spotify.com/artist/1rQ83FNCi6fZxv4sk1DJC8" target="_blank" rel="noopener noreferrer">Spotify ↗</a>
+      <a href="https://music.apple.com/us/artist/don-p-trilville/585799890" target="_blank" rel="noopener noreferrer">Apple Music ↗</a>
+      <a href="https://www.youtube.com/@donptrillville" target="_blank" rel="noopener noreferrer">YouTube ↗</a>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-config.js"></script>
+  <script src="target-practice.js"></script>
+</body>
+</html>
