@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#080808">
+  <meta name="description" content="The members-only DONPONLINE community room.">
+  <title>Community Room | DONPONLINE</title>
+  <link rel="icon" href="../assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="community.css">
+</head>
+<body class="community-page">
+  <div class="noise"></div>
+  <header class="community-header">
+    <a class="brand" href="../index.html"><span class="community-mark">DP</span><span>DONPONLINE</span></a>
+    <nav><a href="../members.html">Motion Coins</a><a href="../crunkville/">Crunkville</a><a href="../account/library/">My Library</a><button id="rules-button" type="button">Community Rules</button></nav>
+  </header>
+
+  <main class="community-shell">
+    <section class="community-intro">
+      <div><p class="eyebrow">MEMBERS-ONLY · LIVE ROOM</p><h1>THE<br><span>COMMUNITY.</span></h1></div>
+      <p>Talk music, business, culture, games, Crunkville, and what’s happening across the DONPONLINE universe.</p>
+    </section>
+
+    <section id="signin-state" class="gate-card" hidden>
+      <p class="eyebrow">MEMBERS ONLY</p><h2>SIGN IN TO JOIN THE CONVERSATION.</h2>
+      <p>Create an account or sign in with your existing DONPONLINE membership. New members receive 100 Motion Coins.</p>
+      <a class="community-button" href="../members.html?return=community">SIGN IN OR CREATE ACCOUNT ↗</a>
+    </section>
+
+    <section id="chat-app" class="chat-layout" hidden>
+      <aside class="community-sidebar">
+        <div class="member-card"><span>CHATTING AS</span><strong id="community-name">MEMBER</strong><small id="community-status">CONNECTED</small></div>
+        <div class="rules-card">
+          <p class="eyebrow">ROOM STANDARD</p><h2>RESPECT THE ROOM.</h2>
+          <ol><li>Respect every member.</li><li>No harassment, hate speech, or threats.</li><li>No spam or repeated promotion.</li><li>Never share private information.</li><li>Disagree without getting disrespectful.</li></ol>
+          <button id="sidebar-rules" type="button">READ ALL RULES</button>
+        </div>
+      </aside>
+
+      <div class="chat-panel">
+        <div class="chat-toolbar"><div><span class="live-dot"></span><strong>COMMUNITY CHAT</strong></div><button id="refresh-chat" type="button">Refresh</button></div>
+        <div id="message-list" class="message-list" aria-live="polite"><p class="chat-loading">Loading the room…</p></div>
+        <form id="message-form" class="message-form">
+          <label for="message-input">POST A MESSAGE</label>
+          <textarea id="message-input" maxlength="500" rows="3" placeholder="Add something to the conversation…" required></textarea>
+          <div><span id="character-count">0 / 500</span><button id="send-message" type="submit">SEND MESSAGE ↗</button></div>
+          <p id="composer-status" role="status"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="rules-dialog" class="community-dialog">
+    <button class="dialog-close" type="button" data-close>×</button>
+    <p class="eyebrow">DONPONLINE COMMUNITY</p><h2>ROOM RULES.</h2>
+    <ol>
+      <li><strong>Respect everybody.</strong><span>No bullying, harassment, hate speech, threats, or personal attacks.</span></li>
+      <li><strong>Keep disagreements constructive.</strong><span>Debate ideas without insulting the person.</span></li>
+      <li><strong>No spam.</strong><span>Do not flood the room, repeat promotions, or post deceptive links.</span></li>
+      <li><strong>Protect privacy.</strong><span>Never post addresses, phone numbers, private messages, or anyone’s personal information.</span></li>
+      <li><strong>Keep it appropriate and legal.</strong><span>No explicit, exploitative, fraudulent, or illegal material.</span></li>
+      <li><strong>Report problems.</strong><span>Use Report instead of retaliating. Moderators may remove content, mute members, or suspend access.</span></li>
+    </ol>
+    <label id="accept-label"><input id="accept-rules-check" type="checkbox"> <span>I understand and agree to follow these rules.</span></label>
+    <button id="accept-rules" class="community-button" type="button">AGREE &amp; ENTER THE ROOM</button>
+  </dialog>
+
+  <dialog id="report-dialog" class="community-dialog report-dialog">
+    <button class="dialog-close" type="button" data-close>×</button>
+    <p class="eyebrow">HELP MODERATE THE ROOM</p><h2>REPORT MESSAGE.</h2>
+    <form id="report-form"><input id="report-message-id" type="hidden"><label>WHY ARE YOU REPORTING THIS?<textarea id="report-reason" maxlength="300" rows="4" required placeholder="Harassment, spam, private information, threats…"></textarea></label><button class="community-button" type="submit">SUBMIT REPORT</button></form>
+  </dialog>
+
+  <div id="community-toast" class="community-toast" role="status"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../assets/js/supabase-config.js"></script>
+  <script src="community.js"></script>
+</body>
+</html>
