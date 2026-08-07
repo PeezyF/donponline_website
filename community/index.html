@@ -34,7 +34,10 @@
 
     <section id="chat-app" class="chat-layout" hidden>
       <aside class="community-sidebar">
-        <div class="member-card"><span>CHATTING AS</span><strong id="community-name">MEMBER</strong><small id="community-status">CONNECTED</small></div>
+        <div class="member-card">
+          <span>CHATTING AS</span><strong id="community-name">MEMBER</strong><b id="community-handle">@member</b><small id="community-status">CONNECTED</small>
+          <form id="handle-form" class="handle-form"><label for="handle-input">YOUR @HANDLE</label><div><span>@</span><input id="handle-input" maxlength="24" autocomplete="off" required><button type="submit">SAVE</button></div><small id="handle-status"></small></form>
+        </div>
         <div class="rules-card">
           <p class="eyebrow">ROOM STANDARD</p><h2>RESPECT THE ROOM.</h2>
           <ol><li>Respect every member.</li><li>No harassment, hate speech, or threats.</li><li>No spam or repeated promotion.</li><li>Never share private information.</li><li>Disagree without getting disrespectful.</li></ol>
@@ -47,7 +50,7 @@
         <div id="message-list" class="message-list" aria-live="polite"><p class="chat-loading">Loading the room…</p></div>
         <form id="message-form" class="message-form">
           <label for="message-input">POST A MESSAGE</label>
-          <textarea id="message-input" maxlength="500" rows="3" placeholder="Add something to the conversation…" required></textarea>
+          <textarea id="message-input" maxlength="500" rows="3" placeholder="Add something to the conversation… Use @handle to mention a member." required></textarea>
           <div><span id="character-count">0 / 500</span><button id="send-message" type="submit">SEND MESSAGE ↗</button></div>
           <p id="composer-status" role="status"></p>
         </form>
