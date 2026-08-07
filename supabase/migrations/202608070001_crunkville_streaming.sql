@@ -42,14 +42,14 @@ create table if not exists public.user_collectibles (
 );
 
 insert into public.crunkville_episodes (episode_number,title,slug,description,full_movie_video_url,start_seconds,end_seconds,duration_seconds,token_price,is_free,is_published) values
- (1,'Welcome to Crunkville','welcome-to-crunkville','Before the records and the tours, step inside the place where the story began.','/assets/videos/crunkville/welcome-to-crunkville-full-movie.mp4',0,626.533,626,0,true,true),
+ (1,'Welcome to Crunkville','welcome-to-crunkville','Before the records and the tours, step inside the place where the story began.','/assets/videos/crunkville/welcome-to-crunkville-full-movie.mp4',0,626.533,626,60,false,true),
  (2,'The Beginning','the-beginning','The first connections, early sessions, and a sound beginning to take shape.','/assets/videos/crunkville/welcome-to-crunkville-full-movie.mp4',626.533,1113.433,487,60,false,true),
  (3,'Building the Movement','building-the-movement','A crew becomes a movement as Atlanta starts paying attention.','/assets/videos/crunkville/welcome-to-crunkville-full-movie.mp4',1113.433,1563.100,450,60,false,true),
  (4,'The Complete Story','the-complete-story','The movement, the pressure, and the legacy of Crunkville.','/assets/videos/crunkville/welcome-to-crunkville-full-movie.mp4',1563.100,2425.267,862,60,false,true)
 on conflict (episode_number) do nothing;
 
 insert into public.crunkville_products (product_type,episode_id,title,description,token_price,badge_name)
-select 'individual_episode', id, 'Episode '||episode_number||' — '||title, description, token_price, null from public.crunkville_episodes where episode_number > 1
+select 'individual_episode', id, 'Episode '||episode_number||' — '||title, description, token_price, null from public.crunkville_episodes
 on conflict (episode_id) where episode_id is not null do nothing;
 insert into public.crunkville_products (product_type,title,description,token_price,badge_name) values
  ('complete_series','Unlock Welcome to Crunkville Movie','Permanent access to the complete 40-minute movie and all four episodes.',300,null),
