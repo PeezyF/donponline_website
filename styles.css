@@ -318,6 +318,17 @@ img { max-width: 100%; }
 .visual-ray::before {
   display: none;
 }
+.crunkville-feature-link { display: block; color: inherit; text-decoration: none; }
+.visual-crunkville { padding: 0; background: #0b0702; }
+.visual-crunkville::before {
+  opacity: .38;
+  background: linear-gradient(rgba(0,0,0,.2), rgba(0,0,0,.45)), url("assets/images/crunkville-home-feature.jpg") center / cover no-repeat;
+  filter: blur(12px);
+  transform: scale(1.08);
+}
+.visual-crunkville img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.show-card-crunkville:hover .visual-crunkville img { transform: scale(1.025); transition: transform .45s ease; }
+.show-card-crunkville .show-footer b { color: var(--acid); font-size: 24px; }
 .show-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .show-visual > * { position: relative; z-index: 2; }
 .show-visual span { color: var(--acid); font-size: 10px; font-weight: 800; letter-spacing: .14em; }
