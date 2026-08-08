@@ -71,6 +71,25 @@
     });
   };
 
+  const renderViews = (views) => {
+    const stats = document.getElementById("view-stats");
+    const fullMovieViews = views.filter((view) => view.view_type === "full_movie").length;
+    const episodeCounts = new Map();
+    views.filter((view) => view.view_type === "episode").forEach((view) => {
+      const label = view.crunkville_episodes?.episode_number
+        ? `Episode ${view.crunkville_episodes.episode_number}` : "Episode";
+      episodeCounts.set(label, (episodeCounts.get(label) || 0) + 1);
+    });
+    const cards = [
+      ["ALL PLAYS", views.length],
+      ["FULL MOVIE", fullMovieViews],
+      ...[...episodeCounts.entries()].sort(([a], [b]) => a.localeCompare(b))
+    ];
+    stats.innerHTML = cards.map(([label, count]) =>
+      `<article><strong>${Number(count).toLocaleString()}</strong><span>${escapeHtml(label)}</span></article>`
+    ).join("");
+  };
+
   async function loadRequests() {
     const { data: { user } } = await client.auth.getUser();
     if (!user || !ownerEmails.has(user.email.toLowerCase())) {
@@ -78,11 +97,18 @@
       if (user) showToast("This account does not have owner access.");
       return;
     }
-    const { data, error } = await client.from("redemption_requests")
-      .select("id,item_key,member_name,member_email,status,details,admin_notes,created_at,catalog_items(title,price_coins)")
-      .order("created_at", { ascending: false });
-    if (error) { showToast(error.message); return; }
-    renderRequests(data || []);
+    const [requestsResult, viewsResult] = await Promise.all([
+      client.from("redemption_requests")
+        .select("id,item_key,member_name,member_email,status,details,admin_notes,created_at,catalog_items(title,price_coins)")
+        .order("created_at", { ascending: false }),
+      client.from("crunkville_views")
+        .select("view_type,viewed_at,crunkville_episodes(episode_number,title)")
+        .order("viewed_at", { ascending: false })
+    ]);
+    if (requestsResult.error) { showToast(requestsResult.error.message); return; }
+    if (viewsResult.error) { showToast(`Views: ${viewsResult.error.message}`); }
+    renderRequests(requestsResult.data || []);
+    renderViews(viewsResult.data || []);
     showDashboard();
   }
 

@@ -148,6 +148,12 @@
 .admin-auth-panel { max-width: 620px; }
 .admin-auth-panel h2, .admin-toolbar h2 { margin: 8px 0 24px; font-family: "Anton", sans-serif; font-size: 48px; font-weight: 400; }
 .admin-toolbar { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 30px; }
+.view-analytics { margin-bottom: 54px; }
+.view-analytics h2 { margin: 8px 0 24px; font-family: "Anton", sans-serif; font-size: 48px; font-weight: 400; }
+.view-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.view-stats article { display: grid; gap: 4px; padding: 24px; border: 1px solid var(--line); background: #0e0e0e; }
+.view-stats strong { color: var(--acid); font-family: "Anton", sans-serif; font-size: 48px; font-weight: 400; }
+.view-stats span { color: #aaa49f; font-size: 10px; font-weight: 900; letter-spacing: .1em; }
 .admin-toolbar > div:last-child { display: flex; gap: 10px; }
 .admin-redemptions { display: grid; gap: 18px; }
 .admin-request-card { padding: clamp(22px, 4vw, 34px); border: 1px solid var(--line); background: #0e0e0e; }

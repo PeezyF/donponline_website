@@ -37,6 +37,10 @@
     </section>
 
     <section id="admin-dashboard" hidden>
+      <section class="view-analytics" aria-labelledby="view-analytics-title">
+        <div><p class="eyebrow">PRIVATE ANALYTICS</p><h2 id="view-analytics-title">CRUNKVILLE VIEWS</h2></div>
+        <div id="view-stats" class="view-stats"><p>Loading views…</p></div>
+      </section>
       <div class="admin-toolbar">
         <div><p class="eyebrow">LIVE QUEUE</p><h2>MANAGE REQUESTS</h2></div>
         <div><button id="admin-refresh" class="outline-button" type="button">Refresh</button><button id="admin-signout" class="outline-button" type="button">Sign out</button></div>
@@ -49,6 +53,6 @@
   <div id="admin-toast" class="member-toast" role="status" aria-live="polite"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-config.js"></script>
-  <script src="assets/js/redemptions-admin.js?v=1"></script>
+  <script src="assets/js/redemptions-admin.js?v=2"></script>
 </body>
 </html>
