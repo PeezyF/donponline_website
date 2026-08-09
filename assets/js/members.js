@@ -140,11 +140,16 @@
       const unlocked = unlockedKeys.has(item.item_key);
       const activeRequest = activeRequestKeys.has(item.item_key);
       const requiresRequest = ["access", "product"].includes(item.item_type);
+      const isZoomConsultation = item.item_key === "zoom-consultation";
 
       title.textContent = item.title;
       description.textContent = item.description;
       button.type = "button";
-      button.textContent = unlocked ? "UNLOCKED" : activeRequest ? "REQUEST ACTIVE" : `${item.price_coins.toLocaleString()} COINS`;
+      button.textContent = unlocked
+        ? "UNLOCKED"
+        : activeRequest
+          ? "REQUEST ACTIVE"
+          : `${isZoomConsultation ? "REDEEM · " : ""}${item.price_coins.toLocaleString()} COINS`;
       button.disabled = unlocked || activeRequest || balance < item.price_coins;
       if (!unlocked && !activeRequest && balance < item.price_coins) {
         button.title = "You need more Motion Coins";
@@ -165,6 +170,7 @@
       });
 
       copy.append(title, description);
+      card.dataset.itemKey = item.item_key;
       card.append(copy, button);
       catalogGrid.append(card);
     });

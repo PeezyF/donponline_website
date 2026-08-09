@@ -102,6 +102,11 @@
 .unlock-benefits article { display: grid; gap: 6px; padding: 16px 18px; border: 1px solid var(--line); background: #090909; }
 .unlock-benefits strong { color: var(--acid); font-size: 11px; letter-spacing: .08em; }
 .unlock-benefits span { color: #b9b3ae; font-size: 12px; line-height: 1.5; }
+.unlock-benefits .zoom-consultation-benefit{border-color:var(--acid);background:linear-gradient(110deg,rgba(225,6,0,.14),#090909 62%)}
+.zoom-consultation-benefit b{color:#fff;font-size:10px;letter-spacing:.1em}
+.zoom-consultation-benefit .text-link{width:fit-content;color:var(--acid);font-size:10px;font-weight:900;letter-spacing:.08em;text-decoration:none}
+.zoom-consultation-benefit .text-link:hover{color:#fff}
+.catalog-item[data-item-key="zoom-consultation"]{border-color:var(--acid);background:rgba(225,6,0,.07)}
 .catalog-item { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: center; padding: 18px; border: 1px solid var(--line); }
 .catalog-item > div { display: grid; gap: 6px; }
 .catalog-item strong { font-size: 13px; }
