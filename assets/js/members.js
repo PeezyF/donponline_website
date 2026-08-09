@@ -10,6 +10,7 @@
   const client = configured
     ? window.supabase.createClient(config.supabaseUrl, config.supabasePublishableKey)
     : null;
+  const memberRedirectUrl = new URL("/members.html", config.siteUrl || "https://donponline.com").href;
 
   const authSection = document.getElementById("auth-section");
   const walletSection = document.getElementById("wallet-section");
@@ -242,7 +243,7 @@
         password: String(formData.get("password") || ""),
         options: {
           data: { display_name: String(formData.get("display_name") || "").trim() },
-          emailRedirectTo: `${window.location.origin}${window.location.pathname}`
+          emailRedirectTo: memberRedirectUrl
         }
       }));
     } catch (requestError) {
@@ -279,7 +280,7 @@
     const { error } = await client.auth.resend({
       type: "signup",
       email,
-      options: { emailRedirectTo: `${window.location.origin}${window.location.pathname}` }
+      options: { emailRedirectTo: memberRedirectUrl }
     });
     resendConfirmation.disabled = false;
     showToast(error ? error.message : "Confirmation email sent again. Check spam too.");
@@ -325,7 +326,7 @@
       return;
     }
     const { error } = await client.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}${window.location.pathname}`
+      redirectTo: memberRedirectUrl
     });
     showToast(error ? error.message : "Password reset email sent.");
   });

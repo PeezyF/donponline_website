@@ -9,7 +9,9 @@ account creation or payments until the following services are connected.
 2. Run `supabase/migrations/202607310001_motion_coins.sql`.
 3. Copy the project URL and publishable key into
    `assets/js/supabase-config.js`.
-4. Add `https://donponline.com/members.html` to the Auth redirect URLs.
+4. In Authentication > URL Configuration, set the Site URL to
+   `https://donponline.com` and add `https://donponline.com/members.html` to the
+   Redirect URLs. Do not leave the Site URL set to localhost in production.
 5. Replace the placeholder project ref in `supabase/config.toml`.
 
 The publishable key is intended for browser use. Never put the secret key,

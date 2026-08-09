@@ -132,6 +132,7 @@ if (accessForm && accessStatus) {
 
     try {
       const config = window.DONPONLINE_CONFIG || {};
+      const memberRedirectUrl = new URL("/members.html", config.siteUrl || "https://donponline.com").href;
       let membershipError = null;
 
       if (wantsMembership) {
@@ -142,7 +143,7 @@ if (accessForm && accessStatus) {
           password: String(data.get("membership_password") || ""),
           options: {
             data: { display_name: String(data.get("name") || "").trim() },
-            emailRedirectTo: `${window.location.origin}/members.html`
+            emailRedirectTo: memberRedirectUrl
           }
         });
         membershipError = error;
