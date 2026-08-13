@@ -90,13 +90,16 @@ Deno.serve(async (request) => {
         pack_key: packKey,
         coins: String(pack.coins)
       },
-      success_url: `${siteUrl}/members.html?purchase=success`,
-      cancel_url: `${siteUrl}/members.html?purchase=cancelled`
+      success_url: `${siteUrl}/members.html?purchase=success&pack=${encodeURIComponent(packKey)}`,
+      cancel_url: `${siteUrl}/members.html?purchase=cancelled&pack=${encodeURIComponent(packKey)}`
     });
   } catch (error) {
     console.error("Stripe checkout session creation failed", error);
     if (isFormPost) {
-      return Response.redirect(`${siteUrl}/members.html?purchase=error`, 303);
+      return Response.redirect(
+        `${siteUrl}/members.html?purchase=error&pack=${encodeURIComponent(packKey)}`,
+        303
+      );
     }
     return Response.json({ error: "Checkout could not be started. Please try again." }, {
       status: 502,

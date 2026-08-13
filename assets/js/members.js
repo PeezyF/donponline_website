@@ -24,8 +24,14 @@
   const redemptionList = document.getElementById("redemption-list");
   const redemptionDialog = document.getElementById("redemption-dialog");
   const redemptionForm = document.getElementById("redemption-form");
+  const pageParams = new URLSearchParams(window.location.search);
+  const purchaseStatus = pageParams.get("purchase");
+  const returnPack = pageParams.get("pack");
   let selectedRedemptionItem = null;
   let beatCartHandled = false;
+  let vipCheckoutHandled = false;
+  let checkoutResumeAttempts = 0;
+  let checkoutResumeTimer;
   let toastTimer;
   const ownerEmails = new Set(["donp@donponline.com", "donpbeats@gmail.com"]);
 
@@ -213,9 +219,10 @@
     } catch (_error) {
       cartBeat = null;
     }
-    const beatTitle = new URLSearchParams(window.location.search).get("beat") || cartBeat?.title;
-    if (!beatTitle) return;
-    beatCartHandled = true;
+    const beatTitle = pageParams.get("beat") || cartBeat?.title || "";
+    const isBeatPackageReturn = purchaseStatus === "success" &&
+      (returnPack === "beat" || localStorage.getItem("donponlinePurchaseIntent") === "beat");
+    if (!beatTitle && !isBeatPackageReturn) return;
     const item = items.find((catalogItem) => catalogItem.item_key === "exclusive-beat");
     if (!item) {
       showToast("Beat checkout is being activated. Your selection is saved.");
@@ -225,16 +232,68 @@
       request.item_key === item.item_key && ["pending", "approved", "scheduled"].includes(request.status)
     );
     if (hasActiveRequest) {
+      beatCartHandled = true;
+      localStorage.removeItem("donponlinePurchaseIntent");
       showToast("You already have an active beat request. Your cart selection is saved.");
       return;
     }
     if (balance < item.price_coins) {
-      showToast(`“${beatTitle}” is saved. Add the 50,000-coin Beat Pack to continue.`);
+      if (isBeatPackageReturn) {
+        scheduleCheckoutResume();
+        return;
+      }
+      showToast(beatTitle
+        ? `“${beatTitle}” is saved. Add the 50,000-coin Beat Pack to continue.`
+        : "Add the 50,000-coin Beat Pack to submit your beat request.");
       document.querySelector('[data-pack="beat"]')?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
+    beatCartHandled = true;
+    localStorage.removeItem("donponlinePurchaseIntent");
     openRedemptionForm(item);
-    redemptionForm.elements.music_link.value = beatTitle;
+    if (beatTitle) redemptionForm.elements.music_link.value = beatTitle;
+  };
+
+  const scheduleCheckoutResume = () => {
+    if (checkoutResumeTimer || checkoutResumeAttempts >= 12) return;
+    checkoutResumeAttempts += 1;
+    if (checkoutResumeAttempts === 1) {
+      showToast("Payment received. Confirming your package now…");
+    }
+    checkoutResumeTimer = setTimeout(() => {
+      checkoutResumeTimer = null;
+      loadMemberData();
+    }, Math.min(1500 * checkoutResumeAttempts, 5000));
+  };
+
+  const continueVipCheckout = async (items, unlocks, balance) => {
+    if (vipCheckoutHandled) return;
+    if (purchaseStatus !== "success") return;
+    const intent = returnPack || localStorage.getItem("donponlinePurchaseIntent");
+    if (intent !== "vip") return;
+    const item = items.find((catalogItem) => catalogItem.item_key === "vip-all-access");
+    if (!item) return;
+    if (unlocks.some((unlock) => unlock.item_key === item.item_key)) {
+      vipCheckoutHandled = true;
+      localStorage.removeItem("donponlinePurchaseIntent");
+      showToast("VIP All Access is active on your account.");
+      return;
+    }
+    if (balance < item.price_coins) {
+      if (purchaseStatus === "success") scheduleCheckoutResume();
+      return;
+    }
+    vipCheckoutHandled = true;
+    try {
+      const result = await redeemItem(item);
+      if (["unlocked", "already_unlocked"].includes(result?.status)) {
+        localStorage.removeItem("donponlinePurchaseIntent");
+        showToast("VIP All Access is active. Welcome to the full experience.");
+      }
+    } catch (error) {
+      vipCheckoutHandled = false;
+      showToast(error.message || "Your coins arrived, but VIP could not be activated automatically.");
+    }
   };
 
   const renderActivity = (entries) => {
@@ -288,11 +347,14 @@
     document.getElementById("coin-balance").textContent = wallet.balance.toLocaleString();
     document.getElementById("lifetime-earned").textContent = wallet.lifetime_earned.toLocaleString();
     document.getElementById("lifetime-spent").textContent = wallet.lifetime_spent.toLocaleString();
-    renderCatalog(catalogResult.data || [], unlockResult.data || [], redemptionResult.data || [], wallet.balance);
+    const catalogItems = catalogResult.data || [];
+    const unlocks = unlockResult.data || [];
+    renderCatalog(catalogItems, unlocks, redemptionResult.data || [], wallet.balance);
     renderRedemptions(redemptionResult.data || []);
     renderActivity(ledgerResult.data || []);
     showWallet();
-    continueBeatCheckout(catalogResult.data || [], redemptionResult.data || [], wallet.balance);
+    continueBeatCheckout(catalogItems, redemptionResult.data || [], wallet.balance);
+    await continueVipCheckout(catalogItems, unlocks, wallet.balance);
   }
 
   signupForm.addEventListener("submit", async (event) => {
@@ -458,6 +520,9 @@
 
       button.disabled = true;
       try {
+        if (["beat", "vip"].includes(button.dataset.pack)) {
+          localStorage.setItem("donponlinePurchaseIntent", button.dataset.pack);
+        }
         const functionName = config.checkoutFunction || "create-checkout";
         const checkoutForm = document.createElement("form");
         checkoutForm.method = "POST";
@@ -498,9 +563,13 @@
     });
   }
 
-  const purchaseStatus = new URLSearchParams(window.location.search).get("purchase");
   if (purchaseStatus === "success") {
-    showToast("Payment received. Your Motion Coins will appear after confirmation.");
+    showToast(["beat", "vip"].includes(returnPack)
+      ? "Payment received. Confirming your package now…"
+      : "Payment received. Your Motion Coins will appear after confirmation.");
+  } else if (purchaseStatus === "cancelled") {
+    localStorage.removeItem("donponlinePurchaseIntent");
+    showToast("Checkout was cancelled. No payment was made.");
   } else if (purchaseStatus === "error") {
     showToast("Checkout could not be started. Please try again in a moment.");
   }
