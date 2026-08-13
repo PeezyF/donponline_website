@@ -25,6 +25,7 @@
   const redemptionDialog = document.getElementById("redemption-dialog");
   const redemptionForm = document.getElementById("redemption-form");
   let selectedRedemptionItem = null;
+  let beatCartHandled = false;
   let toastTimer;
   const ownerEmails = new Set(["donp@donponline.com", "donpbeats@gmail.com"]);
 
@@ -113,11 +114,39 @@
   };
 
   const openRedemptionForm = (item) => {
+    const isShoutout = item.item_key === "personalized-shoutout";
+    const isBeat = item.item_key === "exclusive-beat";
+    const linkLabel = document.getElementById("redemption-link-label");
+    const goalsLabel = document.getElementById("redemption-goals-label");
+    const availabilityLabel = document.getElementById("redemption-availability-label");
+    const linkInput = redemptionForm.elements.music_link;
+    const goalsInput = redemptionForm.elements.goals;
+    const availabilityInput = redemptionForm.elements.availability;
     selectedRedemptionItem = item;
     redemptionForm.reset();
     document.getElementById("redemption-item-key").value = item.item_key;
     document.getElementById("redemption-title").textContent = item.title;
     document.getElementById("redemption-price").textContent = `${item.price_coins.toLocaleString()} MOTION COINS`;
+    linkLabel.firstChild.textContent = isShoutout
+      ? "RECIPIENT NAME / PRONUNCIATION\n        "
+      : isBeat ? "BEAT TITLE OR CATALOG LINK\n        " : "MUSIC, PROFILE, OR PORTFOLIO LINK\n        ";
+    linkInput.type = isShoutout || isBeat ? "text" : "url";
+    linkInput.placeholder = isShoutout ? "Name and how to pronounce it" : isBeat ? "Beat title or link" : "https://...";
+    goalsLabel.firstChild.textContent = isShoutout
+      ? "OCCASION & WHAT SHOULD THE MESSAGE SAY? *\n        "
+      : isBeat ? "ARTIST, PROJECT & INTENDED USE *\n        " : "GOALS / WHAT SHOULD DON P KNOW? *\n        ";
+    goalsInput.placeholder = isShoutout
+      ? "Share the occasion, message, names, and any details to include or avoid."
+      : isBeat ? "Tell us about the artist, song or project, release plans, and how the beat will be used." : "Tell us what you want feedback on or what opportunity you are looking for.";
+    availabilityLabel.firstChild.textContent = isShoutout
+      ? "NEEDED-BY DATE\n        "
+      : isBeat ? "RELEASE DATE / TIMELINE\n        " : "AVAILABILITY\n        ";
+    availabilityInput.placeholder = isShoutout ? "When do you need the message?" : isBeat ? "Expected recording or release date" : "Best days, times, or important dates";
+    document.getElementById("redemption-disclaimer").textContent = isShoutout
+      ? "750 Motion Coins are deducted when you submit. Requests are reviewed before fulfillment; requests that cannot be fulfilled may be refunded by DONPONLINE."
+      : isBeat
+        ? "50,000 Motion Coins are deducted when you submit. Beat availability and final license terms must be confirmed by DONPONLINE; unavailable requests may be refunded."
+        : "Coins are deducted when you submit. Event invitations and performance placements are consideration requests and are not guaranteed. Requests that cannot be fulfilled may be refunded by DONPONLINE.";
     redemptionDialog.showModal();
   };
 
@@ -176,6 +205,38 @@
     });
   };
 
+  const continueBeatCheckout = (items, requests, balance) => {
+    if (beatCartHandled) return;
+    let cartBeat = null;
+    try {
+      cartBeat = JSON.parse(localStorage.getItem("donponlineBeatCart") || "null");
+    } catch (_error) {
+      cartBeat = null;
+    }
+    const beatTitle = new URLSearchParams(window.location.search).get("beat") || cartBeat?.title;
+    if (!beatTitle) return;
+    beatCartHandled = true;
+    const item = items.find((catalogItem) => catalogItem.item_key === "exclusive-beat");
+    if (!item) {
+      showToast("Beat checkout is being activated. Your selection is saved.");
+      return;
+    }
+    const hasActiveRequest = requests.some((request) =>
+      request.item_key === item.item_key && ["pending", "approved", "scheduled"].includes(request.status)
+    );
+    if (hasActiveRequest) {
+      showToast("You already have an active beat request. Your cart selection is saved.");
+      return;
+    }
+    if (balance < item.price_coins) {
+      showToast(`“${beatTitle}” is saved. Add the 50,000-coin Beat Pack to continue.`);
+      document.querySelector('[data-pack="beat"]')?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    openRedemptionForm(item);
+    redemptionForm.elements.music_link.value = beatTitle;
+  };
+
   const renderActivity = (entries) => {
     activityList.replaceChildren();
     document.getElementById("activity-empty").hidden = entries.length > 0;
@@ -231,6 +292,7 @@
     renderRedemptions(redemptionResult.data || []);
     renderActivity(ledgerResult.data || []);
     showWallet();
+    continueBeatCheckout(catalogResult.data || [], redemptionResult.data || [], wallet.balance);
   }
 
   signupForm.addEventListener("submit", async (event) => {
@@ -354,12 +416,20 @@
     const submitButton = redemptionForm.querySelector(".redemption-submit");
     submitButton.disabled = true;
     try {
-      await redeemItem(selectedRedemptionItem, {
-        music_link: String(formData.get("music_link") || "").trim().slice(0, 1000),
+      const isShoutout = selectedRedemptionItem.item_key === "personalized-shoutout";
+      const isBeat = selectedRedemptionItem.item_key === "exclusive-beat";
+      const result = await redeemItem(selectedRedemptionItem, {
+        [isShoutout ? "recipient_name_and_pronunciation" : isBeat ? "beat_link" : "music_link"]: String(formData.get("music_link") || "").trim().slice(0, 1000),
         phone: String(formData.get("phone") || "").trim().slice(0, 100),
-        goals: String(formData.get("goals") || "").trim().slice(0, 2000),
-        availability: String(formData.get("availability") || "").trim().slice(0, 300)
+        [isShoutout ? "occasion_and_message" : isBeat ? "artist_project_and_use" : "goals"]: String(formData.get("goals") || "").trim().slice(0, 2000),
+        [isShoutout ? "needed_by" : isBeat ? "release_timeline" : "availability"]: String(formData.get("availability") || "").trim().slice(0, 300)
       });
+      if (isBeat && result?.status === "pending") {
+        localStorage.removeItem("donponlineBeatCart");
+        const cleanUrl = new URL(window.location.href);
+        cleanUrl.searchParams.delete("beat");
+        window.history.replaceState({}, "", cleanUrl);
+      }
       redemptionDialog.close();
     } catch (error) {
       showToast(error.message || "This reward could not be redeemed.");

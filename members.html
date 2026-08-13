@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="members.css?v=unlock-benefits-1">
+  <link rel="stylesheet" href="members.css?v=beat-cart-1">
 </head>
 <body class="members-page">
   <div class="noise"></div>
@@ -137,6 +137,12 @@
             <button class="coin-pack" data-pack="vault" type="button">
               <span>THE VAULT</span><strong>2,500</strong><small>$19.99</small>
             </button>
+            <button class="coin-pack beat-pack" data-pack="beat" type="button">
+              <span>BEAT PACK</span><strong>50,000</strong><small>$399.99</small>
+            </button>
+            <button class="coin-pack vip-pack" data-pack="vip" type="button">
+              <span>VIP ALL ACCESS</span><strong>100,000</strong><small>$699.99</small>
+            </button>
           </div>
           <p class="purchase-note">Payments are securely processed by Stripe. Coins are added after payment confirmation.</p>
         </section>
@@ -152,6 +158,9 @@
             <article class="zoom-consultation-benefit"><strong>PRIVATE ZOOM CONSULTATION</strong><span>Book a one-on-one strategy session for practical music-business guidance and industry advice.</span><b>1,500 MOTION COINS</b><a class="text-link" href="#catalog-grid">Redeem consultation ↓</a></article>
             <article><strong>CHARACTERS, DROPS &amp; MORE</strong><span>Access game characters, exclusive content, member-only digital drops, special experiences, and much more.</span></article>
             <article><strong>CONCERT TICKETS</strong><span>Unlock tickets to select concerts, live shows, and special performances.</span></article>
+            <article class="shoutout-benefit"><strong>SHOUT-OUTS &amp; BIRTHDAY WISHES</strong><span>Request personalized shout-outs, birthday wishes, celebrations, and special messages for you or someone you love.</span><b>750 MOTION COINS</b><a class="text-link" href="#catalog-grid">Redeem personalized message ↓</a></article>
+            <article class="beat-unlock-benefit"><strong>EXCLUSIVE BEATS</strong><span>Choose a beat from the available DONPONLINE catalog and submit your request.</span><b>50,000 MOTION COINS PER BEAT</b><a class="text-link" href="#catalog-grid">Redeem a beat ↓</a></article>
+            <article class="vip-unlock-benefit"><strong>VIP ALL ACCESS</strong><span>Unlock the complete DONPONLINE member experience, including eligible premium content, digital drops, and VIP access opportunities.</span><b>100,000 MOTION COINS</b><a class="text-link" href="#catalog-grid">Unlock VIP ↓</a></article>
             <article class="crunkville-unlock-benefit"><strong>WELCOME TO CRUNKVILLE OFFICIAL MOVIE</strong><span>Watch the uninterrupted Don P original film or experience it as a four-part series. Unlock individual episodes, the complete movie, or the premium Crunkville experience.</span><a class="text-link" href="crunkville/">Explore the official movie →</a></article>
           </div>
           <div id="catalog-grid" class="catalog-grid"></div>
@@ -197,19 +206,19 @@
       <h2 id="redemption-title">REDEEM REWARD</h2>
       <p id="redemption-price" class="redemption-price"></p>
       <input id="redemption-item-key" name="item_key" type="hidden">
-      <label>MUSIC, PROFILE, OR PORTFOLIO LINK
+      <label id="redemption-link-label">MUSIC, PROFILE, OR PORTFOLIO LINK
         <input name="music_link" type="url" placeholder="https://...">
       </label>
       <label>PHONE NUMBER
         <input name="phone" type="tel" autocomplete="tel" placeholder="Best number to reach you">
       </label>
-      <label>GOALS / WHAT SHOULD DON P KNOW? *
+      <label id="redemption-goals-label">GOALS / WHAT SHOULD DON P KNOW? *
         <textarea name="goals" rows="5" maxlength="2000" required placeholder="Tell us what you want feedback on or what opportunity you are looking for."></textarea>
       </label>
-      <label>AVAILABILITY
+      <label id="redemption-availability-label">AVAILABILITY
         <input name="availability" type="text" maxlength="300" placeholder="Best days, times, or important dates">
       </label>
-      <p class="redemption-disclaimer">Coins are deducted when you submit. Event invitations and performance placements are consideration requests and are not guaranteed. Requests that cannot be fulfilled may be refunded by DONPONLINE.</p>
+      <p id="redemption-disclaimer" class="redemption-disclaimer">Coins are deducted when you submit. Event invitations and performance placements are consideration requests and are not guaranteed. Requests that cannot be fulfilled may be refunded by DONPONLINE.</p>
       <button class="redemption-submit" type="submit">CONFIRM &amp; SPEND COINS ↗</button>
     </form>
   </dialog>
@@ -217,6 +226,6 @@
   <div id="member-toast" class="member-toast" role="status" aria-live="polite"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-config.js"></script>
-  <script src="assets/js/members.js?v=redemptions-2"></script>
+  <script src="assets/js/members.js?v=beat-cart-1"></script>
 </body>
 </html>

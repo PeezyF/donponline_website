@@ -89,10 +89,13 @@
 .portal-panel, .activity-panel { padding: clamp(24px, 4vw, 38px); border: 1px solid var(--line); background: #0e0e0e; }
 .panel-heading { margin-bottom: 24px; }
 .panel-heading h3 { margin: 7px 0 0; font-family: "Anton", sans-serif; font-size: 38px; font-weight: 400; }
-.pack-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.pack-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .coin-pack { min-height: 160px; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 7px; padding: 18px; border: 1px solid var(--line); background: #171717; color: #fff; cursor: pointer; text-align: left; }
 .coin-pack:hover, .coin-pack.featured { border-color: var(--acid); }
 .coin-pack.featured { background: rgba(225,6,0,.1); }
+.coin-pack.beat-pack { border-color: var(--acid); background: linear-gradient(135deg, rgba(225,6,0,.18), #171717 70%); }
+.coin-pack.vip-pack { grid-column: 1 / -1; border-color: #d5b45b; background: linear-gradient(120deg, rgba(213,180,91,.22), #171717 68%); }
+.coin-pack.vip-pack span,.coin-pack.vip-pack small { color: #e9ca72; }
 .coin-pack span { color: #aaa49f; font-size: 8px; font-weight: 900; letter-spacing: .1em; }
 .coin-pack strong { font-family: "Anton", sans-serif; font-size: 42px; font-weight: 400; }
 .coin-pack small { color: var(--acid); font-weight: 900; }
@@ -103,9 +106,13 @@
 .unlock-benefits strong { color: var(--acid); font-size: 11px; letter-spacing: .08em; }
 .unlock-benefits span { color: #b9b3ae; font-size: 12px; line-height: 1.5; }
 .unlock-benefits .zoom-consultation-benefit{border-color:var(--acid);background:linear-gradient(110deg,rgba(225,6,0,.14),#090909 62%)}
-.zoom-consultation-benefit b{color:#fff;font-size:10px;letter-spacing:.1em}
-.zoom-consultation-benefit .text-link{width:fit-content;color:var(--acid);font-size:10px;font-weight:900;letter-spacing:.08em;text-decoration:none}
-.zoom-consultation-benefit .text-link:hover{color:#fff}
+.unlock-benefits .shoutout-benefit{border-color:var(--acid);background:linear-gradient(110deg,rgba(225,6,0,.14),#090909 62%)}
+.unlock-benefits .beat-unlock-benefit{border-color:var(--acid);background:linear-gradient(110deg,rgba(225,6,0,.14),#090909 62%)}
+.unlock-benefits .vip-unlock-benefit{border-color:#d5b45b;background:linear-gradient(110deg,rgba(213,180,91,.18),#090909 62%)}
+.zoom-consultation-benefit b,.shoutout-benefit b,.beat-unlock-benefit b,.vip-unlock-benefit b{color:#fff;font-size:10px;letter-spacing:.1em}
+.zoom-consultation-benefit .text-link,.shoutout-benefit .text-link,.beat-unlock-benefit .text-link,.vip-unlock-benefit .text-link{width:fit-content;color:var(--acid);font-size:10px;font-weight:900;letter-spacing:.08em;text-decoration:none}
+.zoom-consultation-benefit .text-link:hover,.shoutout-benefit .text-link:hover,.beat-unlock-benefit .text-link:hover,.vip-unlock-benefit .text-link:hover{color:#fff}
+.vip-unlock-benefit strong,.vip-unlock-benefit .text-link{color:#e9ca72}
 .catalog-item[data-item-key="zoom-consultation"]{border-color:var(--acid);background:rgba(225,6,0,.07)}
 .catalog-item { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: center; padding: 18px; border: 1px solid var(--line); }
 .catalog-item > div { display: grid; gap: 6px; }

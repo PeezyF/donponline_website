@@ -90,6 +90,53 @@ document.querySelectorAll(".play-button[data-audio]").forEach(button => {
 
 beatAudio.addEventListener("ended", () => resetPlayButton(activePlayButton));
 
+const beatCartTitle = document.getElementById("beat-cart-title");
+const beatCartCheckout = document.getElementById("beat-cart-checkout");
+const beatRows = [...document.querySelectorAll("#beat-playlist .track-row")];
+let selectedBeat = null;
+
+try {
+  selectedBeat = JSON.parse(localStorage.getItem("donponlineBeatCart") || "null");
+} catch (_error) {
+  selectedBeat = null;
+}
+
+const renderBeatCart = () => {
+  if (!beatCartTitle || !beatCartCheckout) return;
+  beatCartTitle.textContent = selectedBeat?.title || "Choose a beat from the playlist";
+  beatCartCheckout.disabled = !selectedBeat;
+  beatRows.forEach((row) => {
+    const button = row.querySelector(".add-beat-button");
+    const isSelected = button?.dataset.beat === selectedBeat?.title;
+    button?.classList.toggle("added", isSelected);
+    if (button) button.textContent = isSelected ? "IN CART ✓" : "ADD · 50K";
+  });
+};
+
+beatRows.forEach((row) => {
+  const title = row.querySelector("strong")?.textContent.trim();
+  const audio = row.querySelector("[data-audio]")?.dataset.audio;
+  if (!title) return;
+  const addButton = document.createElement("button");
+  addButton.type = "button";
+  addButton.className = "add-beat-button";
+  addButton.dataset.beat = title;
+  addButton.addEventListener("click", () => {
+    selectedBeat = { title, audio, priceCoins: 50000 };
+    localStorage.setItem("donponlineBeatCart", JSON.stringify(selectedBeat));
+    renderBeatCart();
+    document.getElementById("beat-cart")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+  row.append(addButton);
+});
+
+beatCartCheckout?.addEventListener("click", () => {
+  if (!selectedBeat) return;
+  window.location.href = `members.html?beat=${encodeURIComponent(selectedBeat.title)}#catalog-grid`;
+});
+
+renderBeatCart();
+
 const membershipInterest = document.getElementById("membership-interest");
 const membershipOptions = document.getElementById("membership-options");
 const membershipLevels = document.querySelectorAll('input[name="membership_level"]');

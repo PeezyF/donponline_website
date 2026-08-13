@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=main-unlocks-3" />
+  <link rel="stylesheet" href="styles.css?v=beat-cart-1" />
 </head>
 <body>
   <div class="noise"></div>
@@ -266,10 +266,10 @@
           <p>
             Shop original Don P production for singles, mixtapes, albums, content, and sync-ready projects.
           </p>
-          <a class="button button-light" href="#" data-placeholder="Beat store link">Shop beats</a>
+          <a class="button button-light" href="#beat-playlist">Shop beats</a>
         </div>
 
-        <div class="mini-player">
+        <div id="beat-playlist" class="mini-player">
           <div class="player-header">
             <span>BEAT PLAYLIST</span>
             <span>DONPONLINE</span>
@@ -340,6 +340,14 @@
             <span>02:57</span>
           </div>
         </div>
+        <aside id="beat-cart" class="beat-cart" aria-live="polite">
+          <div>
+            <small>YOUR BEAT CART</small>
+            <strong id="beat-cart-title">Choose a beat from the playlist</strong>
+            <span id="beat-cart-price">50,000 MOTION COINS PER BEAT</span>
+          </div>
+          <button id="beat-cart-checkout" type="button" disabled>CONTINUE TO CHECKOUT ↗</button>
+        </aside>
       </div>
     </section>
 
@@ -427,6 +435,9 @@
         <article><span>03</span><strong>PRIVATE ZOOM CONSULTATIONS</strong><p>One-on-one strategy sessions with practical music-business guidance and industry advice.</p></article>
         <article><span>04</span><strong>CHARACTERS, DROPS &amp; MORE</strong><p>Game characters, exclusive content, member-only drops, special experiences, and much more.</p></article>
         <article><span>05</span><strong>CONCERT TICKETS</strong><p>Unlock tickets to select concerts, live shows, and special performances.</p></article>
+        <article><span>06</span><strong>SHOUT-OUTS &amp; BIRTHDAY WISHES · 750 MOTION COINS</strong><p>Request personalized shout-outs, birthday wishes, celebrations, and special messages for you or someone you love.</p></article>
+        <article><span>07</span><strong>EXCLUSIVE BEATS · 50,000 MOTION COINS</strong><p>Choose a beat from the available DONPONLINE catalog and submit your request.</p></article>
+        <article><span>08</span><strong>VIP ALL ACCESS · 100,000 MOTION COINS</strong><p>Unlock the complete DONPONLINE member experience, including eligible premium content, digital drops, and VIP access opportunities.</p></article>
       </div>
 
       <a class="button unlocks-cta" href="members.html">ENTER THE MEMBERS PORTAL ↗</a>
@@ -560,6 +571,6 @@
   <div class="placeholder-toast" role="status" aria-live="polite"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-config.js"></script>
-  <script src="script.js?v=unified-signup-1"></script>
+  <script src="script.js?v=beat-cart-1"></script>
 </body>
 </html>

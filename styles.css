@@ -471,12 +471,20 @@ img { max-width: 100%; }
 }
 .player-header { display: flex; justify-content: space-between; color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .12em; }
 .waveform { height: 110px; margin: 24px 0; background: repeating-linear-gradient(90deg, var(--acid) 0 2px, transparent 2px 7px); mask-image: linear-gradient(to bottom, transparent, black 35%, black 65%, transparent); opacity: .8; }
-.track-row { display: grid; grid-template-columns: 44px 1fr auto; gap: 12px; align-items: center; padding: 15px 0; border-top: 1px solid var(--line); }
+.track-row { display: grid; grid-template-columns: 44px 1fr auto auto; gap: 12px; align-items: center; padding: 15px 0; border-top: 1px solid var(--line); }
 .play-button { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--white); cursor: pointer; }
 .play-button.playing { background: var(--acid); color: var(--black); }
 .track-row div { display: flex; flex-direction: column; gap: 3px; }
 .track-row small { color: var(--muted); font-size: 8px; letter-spacing: .11em; }
 .track-row > span { color: var(--muted); font-size: 10px; }
+.add-beat-button { padding: 9px 11px; border: 1px solid var(--acid); background: transparent; color: var(--white); font-size: 8px; font-weight: 900; letter-spacing: .08em; cursor: pointer; }
+.add-beat-button:hover,.add-beat-button.added { background: var(--acid); color: var(--black); }
+.beat-cart { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; padding: 22px 24px; border: 1px solid var(--acid); background: #0d0d0d; }
+.beat-cart > div { display: grid; gap: 6px; }
+.beat-cart small,.beat-cart span { color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .1em; }
+.beat-cart strong { font-family: "Anton", sans-serif; font-size: 28px; font-weight: 400; }
+.beat-cart button { min-height: 48px; padding: 0 18px; border: 1px solid var(--acid); background: var(--acid); color: var(--black); font-size: 9px; font-weight: 900; letter-spacing: .08em; cursor: pointer; }
+.beat-cart button:disabled { border-color: var(--line); background: transparent; color: var(--muted); cursor: not-allowed; }
 .demo-note { font-size: 10px; color: var(--muted); line-height: 1.5; margin: 16px 0 0; }
 
 .knowledge-grid { display: grid; gap: 12px; }
@@ -708,6 +716,11 @@ footer a:hover { color: var(--acid); }
   .show-visual h3 { font-size: 50px; }
   .beats-panel { padding: 28px 20px; }
   .mini-player { padding: 18px; box-shadow: 8px 8px 0 rgba(0,0,0,.15); }
+  .track-row { grid-template-columns: 38px 1fr auto; gap: 8px; }
+  .track-row > span { display: none; }
+  .add-beat-button { padding-inline: 8px; }
+  .beat-cart { grid-template-columns: 1fr; padding: 18px; }
+  .beat-cart button { width: 100%; }
   .knowledge-card { grid-template-columns: 35px 1fr; padding: 22px 16px; }
   .knowledge-card b { display: none; }
   .about-statement { text-align: left; }
