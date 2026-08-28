@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Watch Target Practice 4, the new five-episode AI series from Don P, hosted by DJ Scream.">
+  <meta name="theme-color" content="#070707">
+  <title>Target Practice 4 Series | DONPONLINE</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="series.css">
+</head>
+<body>
+  <header class="series-header">
+    <a class="brand" href="../index.html">DONPONLINE</a>
+    <nav><a href="#episodes">Episodes</a><a href="../target-practice.html">Play the game</a><a id="wallet-link" href="../members.html">Join or sign in</a></nav>
+  </header>
+  <main>
+    <section class="series-hero">
+      <div class="hero-copy">
+        <p class="kicker">DON P PRESENTS · HOSTED BY DJ SCREAM</p>
+        <h1>TARGET<br><span>PRACTICE 4</span></h1>
+        <p class="logline">The new AI series. Five episodes of music, pressure, and motion—available only on DONPONLINE.</p>
+        <div class="meta"><span>5 EPISODES</span><span>AI SERIES</span><span>SEASON 1</span></div>
+        <div class="hero-actions"><a class="button primary" href="#episodes">Browse episodes</a><button class="button" data-buy="complete_season">Unlock Season — 300 Coins</button></div>
+      </div>
+      <img src="../assets/images/targetpractice4.PNG" alt="Target Practice 4 cover artwork">
+    </section>
+
+    <section id="continue-section" class="section" hidden>
+      <div class="heading"><div><p>KEEP IT MOVING</p><h2>CONTINUE WATCHING.</h2></div></div>
+      <div id="continue-card"></div>
+    </section>
+
+    <section id="episodes" class="section">
+      <div class="heading"><div><p>SEASON ONE</p><h2>FIVE EPISODES.<br>ONE TARGET.</h2></div><span id="account-balance">SIGN IN TO UNLOCK</span></div>
+      <div id="episode-grid" class="episode-grid"><p class="loading">Loading the series…</p></div>
+    </section>
+
+    <section class="section pricing">
+      <div class="heading"><div><p>CHOOSE YOUR ACCESS</p><h2>WATCH YOUR WAY.</h2></div></div>
+      <div class="price-grid">
+        <article><span>PAY AS YOU GO</span><h3>INDIVIDUAL EPISODES</h3><strong>75 <small>COINS EACH</small></strong><p>Permanent access to any episode you unlock.</p></article>
+        <article class="best"><b>BEST VALUE</b><span>ALL 5 EPISODES</span><h3>COMPLETE SEASON</h3><strong>300 <small>MOTION COINS</small></strong><p>Unlock the complete first season and save 75 coins.</p><button data-buy="complete_season">Unlock Season</button></article>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="purchase-dialog">
+    <button class="dialog-x" data-close aria-label="Close">×</button>
+    <p class="kicker">CONFIRM YOUR UNLOCK</p><h2 id="purchase-title"></h2><p id="purchase-copy"></p>
+    <dl><div><dt>Current balance</dt><dd id="current-balance">—</dd></div><div><dt>Price</dt><dd id="purchase-price">—</dd></div><div><dt>Balance after purchase</dt><dd id="after-balance">—</dd></div></dl>
+    <p id="purchase-error" role="alert"></p>
+    <div class="dialog-actions"><button id="confirm-purchase" class="button primary">Confirm Unlock</button><button class="button" data-close>Cancel</button></div>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <footer><span>TARGET PRACTICE 4 · SEASON ONE</span><a href="../index.html">DONPONLINE ↗</a></footer>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../assets/js/supabase-config.js"></script>
+  <script src="series.js?v=1"></script>
+</body>
+</html>
