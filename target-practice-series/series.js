@@ -15,11 +15,11 @@
     }).join("");
     document.querySelectorAll("[data-episode]").forEach(button => button.onclick = () => {
       const episode = episodes.find(item => item.id === button.dataset.episode);
-      if (owns(episode)) location.href = `watch/?episode=${encodeURIComponent(episode.slug)}`;
+      if (owns(episode)) location.href = `watch/index.html?episode=${encodeURIComponent(episode.slug)}`;
       else openPurchase(products.find(product => product.episode_id === episode.id));
     });
     const latest = [...progress].filter(item => item.progress_seconds && !item.completed).sort((a, b) => new Date(b.last_watched_at) - new Date(a.last_watched_at))[0];
-    if (latest) { const episode = episodes.find(item => item.id === latest.episode_id); $("#continue-section").hidden = false; $("#continue-card").innerHTML = `<a class="continue" href="watch/?episode=${episode.slug}"><span>▶</span><div><small>EPISODE ${episode.episode_number}</small><h3>${episode.title}</h3><p>Resume at ${formatTime(latest.progress_seconds)}</p></div></a>`; }
+    if (latest) { const episode = episodes.find(item => item.id === latest.episode_id); $("#continue-section").hidden = false; $("#continue-card").innerHTML = `<a class="continue" href="watch/index.html?episode=${episode.slug}"><span>▶</span><div><small>EPISODE ${episode.episode_number}</small><h3>${episode.title}</h3><p>Resume at ${formatTime(latest.progress_seconds)}</p></div></a>`; }
   }
   function openPurchase(product) {
     if (!user) { toast("Create a free member account or sign in to unlock the series."); setTimeout(() => location.href = "../members.html?return=target-practice-series#auth-section", 1500); return; }
