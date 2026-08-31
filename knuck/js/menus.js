@@ -85,29 +85,57 @@ function buildMenuPanel(scene, title, options, yStart, step) {
 function buildTouchControls(scene) {
   scene.touchState = { left: false, right: false, up: false, down: false, punch: false, kick: false, block: false };
   const objects = [];
-  const mk = (x, y, w, h, label, key, round) => {
-    const zone = round
-      ? scene.add.circle(x, y, w, 0xffffff, 0.14).setDepth(30).setScrollFactor(0)
-      : scene.add.rectangle(x, y, w, h, 0xffffff, 0.12).setDepth(30).setScrollFactor(0);
-    zone.setStrokeStyle(2, 0xffe066, 0.5).setInteractive();
-    const text = scene.add.text(x, y, label, { fontFamily: 'monospace', fontSize: '13px', color: '#ffe066' }).setOrigin(0.5).setDepth(31).setAlpha(0.8);
-    zone.on('pointerdown', () => { scene.touchState[key] = true; });
-    zone.on('pointerup', () => { scene.touchState[key] = false; });
-    zone.on('pointerout', () => { scene.touchState[key] = false; });
-    objects.push(zone, text);
-    return zone;
+  const addArcadeButton = (x, y, label, key, color) => {
+    const shadow = scene.add.circle(x, y + 5, 30, 0x000000, 0.72).setDepth(29).setScrollFactor(0);
+    const rim = scene.add.circle(x, y, 30, 0x11111b, 0.96)
+      .setStrokeStyle(3, 0xffd85a, 0.9).setDepth(30).setScrollFactor(0);
+    const face = scene.add.circle(x, y - 2, 25, color, 0.94)
+      .setStrokeStyle(2, 0xffffff, 0.52).setDepth(31).setScrollFactor(0).setInteractive();
+    const shine = scene.add.ellipse(x - 7, y - 10, 17, 8, 0xffffff, 0.32).setDepth(32).setScrollFactor(0);
+    const text = scene.add.text(x, y - 1, label, {
+      fontFamily: 'monospace', fontSize: '15px', color: '#ffffff', stroke: '#000000', strokeThickness: 3, fontStyle: 'bold'
+    }).setOrigin(0.5).setDepth(33).setScrollFactor(0);
+    const setPressed = pressed => {
+      scene.touchState[key] = pressed;
+      face.setY(y + (pressed ? 2 : -2)).setScale(pressed ? 0.94 : 1);
+      shine.setY(y + (pressed ? -6 : -10)).setAlpha(pressed ? 0.14 : 0.32);
+      text.setY(y + (pressed ? 3 : -1));
+    };
+    face.on('pointerdown', () => setPressed(true));
+    face.on('pointerup', () => setPressed(false));
+    face.on('pointerout', () => setPressed(false));
+    objects.push(shadow, rim, face, shine, text);
   };
 
-  // Fixed virtual joystick: drag the thumb in any direction, including diagonals.
-  const joyX = 100, joyY = GAME_H - 60, joyRadius = 52, maxTravel = 36, deadZone = 11;
-  const joyBase = scene.add.circle(joyX, joyY, joyRadius, 0x090914, 0.58)
-    .setStrokeStyle(3, 0xffe066, 0.65).setDepth(30).setScrollFactor(0).setInteractive();
-  const joyCross = scene.add.text(joyX, joyY, '+', {
-    fontFamily: 'monospace', fontSize: '54px', color: '#ffe066'
-  }).setOrigin(0.5).setDepth(31).setScrollFactor(0).setAlpha(0.22);
-  const joyKnob = scene.add.circle(joyX, joyY, 23, 0xffe066, 0.34)
-    .setStrokeStyle(2, 0xffffff, 0.72).setDepth(32).setScrollFactor(0);
-  objects.push(joyBase, joyCross, joyKnob);
+  // Layered arcade joystick with a moving shaft and glossy ball top.
+  const joyX = 100, joyY = GAME_H - 60, joyRadius = 56, maxTravel = 34, deadZone = 11;
+  const joyShadow = scene.add.ellipse(joyX, joyY + 8, 120, 102, 0x000000, 0.62).setDepth(27).setScrollFactor(0);
+  const joyBase = scene.add.circle(joyX, joyY, joyRadius, 0x11111c, 0.94)
+    .setStrokeStyle(4, 0xffd85a, 0.9).setDepth(28).setScrollFactor(0);
+  const joyPlate = scene.add.circle(joyX, joyY, 43, 0x272738, 0.96)
+    .setStrokeStyle(3, 0x77778e, 0.75).setDepth(29).setScrollFactor(0);
+  const joyGate = scene.add.circle(joyX, joyY, 31, 0x07070d, 0.9)
+    .setStrokeStyle(2, 0xffd85a, 0.3).setDepth(30).setScrollFactor(0);
+  const joyShaft = scene.add.graphics().setDepth(31).setScrollFactor(0);
+  const joyBallShadow = scene.add.circle(joyX + 3, joyY + 5, 25, 0x000000, 0.68).setDepth(32).setScrollFactor(0);
+  const joyBall = scene.add.circle(joyX, joyY, 23, 0xd51f27, 1)
+    .setStrokeStyle(3, 0xff6a62, 0.95).setDepth(33).setScrollFactor(0);
+  const joyShine = scene.add.ellipse(joyX - 7, joyY - 8, 15, 9, 0xffffff, 0.5).setDepth(34).setScrollFactor(0);
+  const joyHit = scene.add.circle(joyX, joyY, joyRadius, 0xffffff, 0.001)
+    .setDepth(35).setScrollFactor(0).setInteractive();
+  const moveLabel = scene.add.text(joyX, joyY - 63, 'MOVE', {
+    fontFamily: 'monospace', fontSize: '10px', color: '#ffe066', stroke: '#000', strokeThickness: 2, fontStyle: 'bold'
+  }).setOrigin(0.5).setDepth(35).setScrollFactor(0).setAlpha(0.9);
+  objects.push(joyShadow, joyBase, joyPlate, joyGate, joyShaft, joyBallShadow, joyBall, joyShine, joyHit, moveLabel);
+
+  const setJoystickVisual = (dx, dy) => {
+    joyShaft.clear().lineStyle(10, 0xa7a7b3, 1).lineBetween(joyX, joyY, joyX + dx, joyY + dy);
+    joyShaft.lineStyle(3, 0xffffff, 0.38).lineBetween(joyX - 2, joyY - 2, joyX + dx - 2, joyY + dy - 2);
+    joyBallShadow.setPosition(joyX + dx + 3, joyY + dy + 5);
+    joyBall.setPosition(joyX + dx, joyY + dy);
+    joyShine.setPosition(joyX + dx - 7, joyY + dy - 8);
+  };
+  setJoystickVisual(0, 0);
 
   let joystickPointer = null;
   const clearDirections = () => {
@@ -121,7 +149,7 @@ function buildTouchControls(scene) {
       dx *= maxTravel / distance;
       dy *= maxTravel / distance;
     }
-    joyKnob.setPosition(joyX + dx, joyY + dy);
+    setJoystickVisual(dx, dy);
     scene.touchState.left = dx < -deadZone;
     scene.touchState.right = dx > deadZone;
     scene.touchState.up = dy < -deadZone;
@@ -131,13 +159,13 @@ function buildTouchControls(scene) {
     if (joystickPointer !== null && (!pointer || pointer.id === joystickPointer)) {
       joystickPointer = null;
       clearDirections();
-      joyKnob.setPosition(joyX, joyY);
+      setJoystickVisual(0, 0);
     }
   };
   const onJoystickMove = pointer => {
     if (pointer.id === joystickPointer && pointer.isDown) moveJoystick(pointer);
   };
-  joyBase.on('pointerdown', (pointer, localX, localY, event) => {
+  joyHit.on('pointerdown', (pointer, localX, localY, event) => {
     joystickPointer = pointer.id;
     moveJoystick(pointer);
     if (event) event.stopPropagation();
@@ -146,9 +174,9 @@ function buildTouchControls(scene) {
   scene.input.on('pointerup', releaseJoystick);
   scene.input.on('pointerupoutside', releaseJoystick);
 
-  mk(GAME_W - 140, GAME_H - 90, 26, 0, 'P', 'punch', true);
-  mk(GAME_W - 78, GAME_H - 90, 26, 0, 'K', 'kick', true);
-  mk(GAME_W - 109, GAME_H - 34, 26, 0, 'B', 'block', true);
+  addArcadeButton(GAME_W - 144, GAME_H - 91, 'P', 'punch', 0xd51f27);
+  addArcadeButton(GAME_W - 76, GAME_H - 91, 'K', 'kick', 0x246fe5);
+  addArcadeButton(GAME_W - 110, GAME_H - 31, 'B', 'block', 0xe3a51b);
 
   scene.touchDestroy = () => {
     scene.input.off('pointermove', onJoystickMove);
@@ -223,7 +251,7 @@ class TitleScene extends Phaser.Scene {
   create() {
     this.add.image(GAME_W / 2, GAME_H / 2, 'opening1').setDisplaySize(GAME_W, GAME_H);
     const press = this.add.text(GAME_W / 2, GAME_H * 0.86, isTouch() ? 'TAP TO START' : 'PRESS START', { fontFamily: 'monospace', fontSize: '18px', color: '#ffffff', stroke: '#000', strokeThickness: 4, fontStyle: 'bold' }).setOrigin(0.5);
-    this.add.text(GAME_W - 6, GAME_H - 6, 'v4.0', { fontFamily: 'monospace', fontSize: '10px', color: '#ffe066', stroke: '#000', strokeThickness: 2 }).setOrigin(1, 1);
+    this.add.text(GAME_W - 6, GAME_H - 6, 'v4.1', { fontFamily: 'monospace', fontSize: '10px', color: '#ffe066', stroke: '#000', strokeThickness: 2 }).setOrigin(1, 1);
     this.tweens.add({ targets: press, alpha: 0.15, yoyo: true, repeat: -1, duration: 550 });
     const go = () => { unlockAudio(); SFX.confirm(); this.scene.start('ModeSelect'); };
     this.input.keyboard.once('keydown', go);
