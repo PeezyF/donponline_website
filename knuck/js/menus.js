@@ -78,27 +78,78 @@ function buildMenuPanel(scene, title, options, yStart, step) {
 // ---- on-screen touch controls for P1 ----
 function buildTouchControls(scene) {
   scene.touchState = { left: false, right: false, up: false, down: false, punch: false, kick: false, block: false };
+  const objects = [];
   const mk = (x, y, w, h, label, key, round) => {
     const zone = round
       ? scene.add.circle(x, y, w, 0xffffff, 0.14).setDepth(30).setScrollFactor(0)
       : scene.add.rectangle(x, y, w, h, 0xffffff, 0.12).setDepth(30).setScrollFactor(0);
     zone.setStrokeStyle(2, 0xffe066, 0.5).setInteractive();
-    scene.add.text(x, y, label, { fontFamily: 'monospace', fontSize: '13px', color: '#ffe066' }).setOrigin(0.5).setDepth(31).setAlpha(0.8);
+    const text = scene.add.text(x, y, label, { fontFamily: 'monospace', fontSize: '13px', color: '#ffe066' }).setOrigin(0.5).setDepth(31).setAlpha(0.8);
     zone.on('pointerdown', () => { scene.touchState[key] = true; });
     zone.on('pointerup', () => { scene.touchState[key] = false; });
     zone.on('pointerout', () => { scene.touchState[key] = false; });
+    objects.push(zone, text);
     return zone;
   };
-  const objs = [
-    mk(60, GAME_H - 58, 44, 44, '<', 'left'),
-    mk(140, GAME_H - 58, 44, 44, '>', 'right'),
-    mk(100, GAME_H - 98, 44, 40, '^', 'up'),
-    mk(100, GAME_H - 22, 44, 36, 'v', 'down'),
-    mk(GAME_W - 140, GAME_H - 90, 26, 0, 'P', 'punch', true),
-    mk(GAME_W - 78, GAME_H - 90, 26, 0, 'K', 'kick', true),
-    mk(GAME_W - 109, GAME_H - 34, 26, 0, 'B', 'block', true)
-  ];
-  scene.touchDestroy = () => objs.forEach(o => o.destroy());
+
+  // Fixed virtual joystick: drag the thumb in any direction, including diagonals.
+  const joyX = 100, joyY = GAME_H - 60, joyRadius = 52, maxTravel = 36, deadZone = 11;
+  const joyBase = scene.add.circle(joyX, joyY, joyRadius, 0x090914, 0.58)
+    .setStrokeStyle(3, 0xffe066, 0.65).setDepth(30).setScrollFactor(0).setInteractive();
+  const joyCross = scene.add.text(joyX, joyY, '+', {
+    fontFamily: 'monospace', fontSize: '54px', color: '#ffe066'
+  }).setOrigin(0.5).setDepth(31).setScrollFactor(0).setAlpha(0.22);
+  const joyKnob = scene.add.circle(joyX, joyY, 23, 0xffe066, 0.34)
+    .setStrokeStyle(2, 0xffffff, 0.72).setDepth(32).setScrollFactor(0);
+  objects.push(joyBase, joyCross, joyKnob);
+
+  let joystickPointer = null;
+  const clearDirections = () => {
+    scene.touchState.left = scene.touchState.right = false;
+    scene.touchState.up = scene.touchState.down = false;
+  };
+  const moveJoystick = pointer => {
+    let dx = pointer.x - joyX, dy = pointer.y - joyY;
+    const distance = Math.hypot(dx, dy);
+    if (distance > maxTravel) {
+      dx *= maxTravel / distance;
+      dy *= maxTravel / distance;
+    }
+    joyKnob.setPosition(joyX + dx, joyY + dy);
+    scene.touchState.left = dx < -deadZone;
+    scene.touchState.right = dx > deadZone;
+    scene.touchState.up = dy < -deadZone;
+    scene.touchState.down = dy > deadZone;
+  };
+  const releaseJoystick = pointer => {
+    if (joystickPointer !== null && (!pointer || pointer.id === joystickPointer)) {
+      joystickPointer = null;
+      clearDirections();
+      joyKnob.setPosition(joyX, joyY);
+    }
+  };
+  const onJoystickMove = pointer => {
+    if (pointer.id === joystickPointer && pointer.isDown) moveJoystick(pointer);
+  };
+  joyBase.on('pointerdown', (pointer, localX, localY, event) => {
+    joystickPointer = pointer.id;
+    moveJoystick(pointer);
+    if (event) event.stopPropagation();
+  });
+  scene.input.on('pointermove', onJoystickMove);
+  scene.input.on('pointerup', releaseJoystick);
+  scene.input.on('pointerupoutside', releaseJoystick);
+
+  mk(GAME_W - 140, GAME_H - 90, 26, 0, 'P', 'punch', true);
+  mk(GAME_W - 78, GAME_H - 90, 26, 0, 'K', 'kick', true);
+  mk(GAME_W - 109, GAME_H - 34, 26, 0, 'B', 'block', true);
+
+  scene.touchDestroy = () => {
+    scene.input.off('pointermove', onJoystickMove);
+    scene.input.off('pointerup', releaseJoystick);
+    scene.input.off('pointerupoutside', releaseJoystick);
+    objects.forEach(o => o.destroy());
+  };
   scene.input.addPointer(3);
 }
 
@@ -166,7 +217,7 @@ class TitleScene extends Phaser.Scene {
   create() {
     this.add.image(GAME_W / 2, GAME_H / 2, 'opening1').setDisplaySize(GAME_W, GAME_H);
     const press = this.add.text(GAME_W / 2, GAME_H * 0.86, isTouch() ? 'TAP TO START' : 'PRESS START', { fontFamily: 'monospace', fontSize: '18px', color: '#ffffff', stroke: '#000', strokeThickness: 4, fontStyle: 'bold' }).setOrigin(0.5);
-    this.add.text(GAME_W - 6, GAME_H - 6, 'v3.7', { fontFamily: 'monospace', fontSize: '10px', color: '#ffe066', stroke: '#000', strokeThickness: 2 }).setOrigin(1, 1);
+    this.add.text(GAME_W - 6, GAME_H - 6, 'v3.8', { fontFamily: 'monospace', fontSize: '10px', color: '#ffe066', stroke: '#000', strokeThickness: 2 }).setOrigin(1, 1);
     this.tweens.add({ targets: press, alpha: 0.15, yoyo: true, repeat: -1, duration: 550 });
     const go = () => { unlockAudio(); SFX.confirm(); this.scene.start('ModeSelect'); };
     this.input.keyboard.once('keydown', go);
