@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Play KNUCK!, the Atlanta fighting game featuring artists and DJs including Don P, Lil Jon, Lil Scrappy, Diamond, Princess, DJ Scream, and more.">
 <meta name="theme-color" content="#05050c">
 <title>KNUCK! | Atlanta Artist &amp; DJ Fighting Game</title>
@@ -17,17 +17,96 @@
     font: 700 11px/1 monospace; letter-spacing: .08em;
   }
   .site-home:hover, .site-home:focus-visible { background: #ffe066; color: #05050c; }
+  .moves-button {
+    position: fixed; top: 12px; right: 12px; z-index: 60;
+    padding: 10px 14px; border: 1px solid #e12a23;
+    background: rgba(5,5,12,.86); color: #fff; cursor: pointer;
+    font: 800 11px/1 monospace; letter-spacing: .1em;
+  }
+  .moves-button:hover, .moves-button:focus-visible { background: #e12a23; }
+  .move-list {
+    position: fixed; inset: 0; z-index: 70;
+    display: flex; flex-direction: column; align-items: center;
+    background: #05050c; color: #fff;
+  }
+  .move-list[hidden] { display: none; }
+  .move-list-scroll {
+    width: 100%; flex: 1; min-height: 0; overflow: auto;
+    display: flex; align-items: center; justify-content: center;
+    overscroll-behavior: contain;
+  }
+  .move-list img {
+    display: block; width: min(100%, 1536px); height: auto;
+    max-height: calc(100vh - 78px); object-fit: contain;
+  }
+  .move-list-actions {
+    position: relative; z-index: 2; width: 100%; min-height: 78px;
+    display: flex; align-items: center; justify-content: center; gap: 18px;
+    padding: 12px 18px; box-sizing: border-box;
+    border-top: 1px solid rgba(225,42,35,.7); background: #08080d;
+  }
+  .move-list-hint { margin: 0; color: #bfc3ca; font: 700 11px/1.4 monospace; text-align: center; }
+  .start-button {
+    flex: 0 0 auto; min-height: 48px; padding: 0 24px;
+    border: 1px solid #ffe066; background: #ffe066; color: #05050c;
+    cursor: pointer; font: 900 13px/1 monospace; letter-spacing: .08em;
+  }
+  .start-button:hover, .start-button:focus-visible { background: #fff; border-color: #fff; }
+  body.instructions-open .site-home, body.instructions-open .moves-button, body.instructions-open #scanlines { display: none; }
   #scanlines {
     position: fixed; inset: 0; pointer-events: none; z-index: 50;
     background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,0.18) 3px);
     mix-blend-mode: multiply;
   }
+  @media (max-width: 700px) {
+    .move-list-scroll { align-items: flex-start; justify-content: flex-start; }
+    .move-list img { width: 900px; max-width: none; max-height: none; }
+    .move-list-actions { min-height: 92px; flex-direction: column; gap: 8px; padding: 10px 14px; }
+    .move-list-hint::after { content: " Rotate your phone for the clearest view."; }
+    .start-button { width: min(100%, 360px); }
+  }
 </style>
 </head>
-<body>
+<body class="instructions-open">
 <a class="site-home" href="../" aria-label="Return to DonPOnline">← DONPONLINE</a>
+<button class="moves-button" id="open-moves" type="button" aria-controls="move-list">MOVES</button>
+<section class="move-list" id="move-list" role="dialog" aria-modal="true" aria-label="Knuck controls and move list">
+  <div class="move-list-scroll">
+    <img src="assets/ui/move-list.png" alt="Knuck controls: gamepad and keyboard controls for both players, universal attacks, blocks, throws, and quarter-circle special moves." />
+  </div>
+  <div class="move-list-actions">
+    <p class="move-list-hint">Scroll or pinch to inspect the complete move list.</p>
+    <button class="start-button" id="close-moves" type="button">START FIGHTING →</button>
+  </div>
+</section>
 <div id="game"></div>
 <div id="scanlines"></div>
+<script>
+  (() => {
+    const panel = document.getElementById('move-list');
+    const openButton = document.getElementById('open-moves');
+    const closeButton = document.getElementById('close-moves');
+    const showMoves = () => {
+      panel.hidden = false;
+      document.body.classList.add('instructions-open');
+      closeButton.focus();
+    };
+    const hideMoves = () => {
+      panel.hidden = true;
+      document.body.classList.remove('instructions-open');
+      openButton.focus();
+    };
+    openButton.addEventListener('click', showMoves);
+    closeButton.addEventListener('click', hideMoves);
+    window.addEventListener('keydown', event => {
+      if (!panel.hidden) {
+        if (event.key === 'Escape' || event.key === 'Enter' || event.key === ' ') hideMoves();
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    }, true);
+  })();
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.80.1/phaser.min.js"></script>
 <script src="js/data.js"></script>
 <script src="js/audio.js"></script>
