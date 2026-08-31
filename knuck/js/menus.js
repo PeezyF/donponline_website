@@ -223,7 +223,7 @@ class TitleScene extends Phaser.Scene {
   create() {
     this.add.image(GAME_W / 2, GAME_H / 2, 'opening1').setDisplaySize(GAME_W, GAME_H);
     const press = this.add.text(GAME_W / 2, GAME_H * 0.86, isTouch() ? 'TAP TO START' : 'PRESS START', { fontFamily: 'monospace', fontSize: '18px', color: '#ffffff', stroke: '#000', strokeThickness: 4, fontStyle: 'bold' }).setOrigin(0.5);
-    this.add.text(GAME_W - 6, GAME_H - 6, 'v3.9', { fontFamily: 'monospace', fontSize: '10px', color: '#ffe066', stroke: '#000', strokeThickness: 2 }).setOrigin(1, 1);
+    this.add.text(GAME_W - 6, GAME_H - 6, 'v4.0', { fontFamily: 'monospace', fontSize: '10px', color: '#ffe066', stroke: '#000', strokeThickness: 2 }).setOrigin(1, 1);
     this.tweens.add({ targets: press, alpha: 0.15, yoyo: true, repeat: -1, duration: 550 });
     const go = () => { unlockAudio(); SFX.confirm(); this.scene.start('ModeSelect'); };
     this.input.keyboard.once('keydown', go);
@@ -297,6 +297,57 @@ class CharSelectScene extends Phaser.Scene {
     this.k1 = this.input.keyboard.addKeys({ left: K.A, right: K.D, up: K.W, down: K.S, ok: K.F });
     this.k2 = this.input.keyboard.addKeys({ left: K.LEFT, right: K.RIGHT, up: K.UP, down: K.DOWN, ok: K.K });
     this.paint();
+    if (isTouch()) this.buildTouchSelectPad();
+  }
+
+  buildTouchSelectPad() {
+    const padX = 68, padY = 298;
+    const base = this.add.circle(padX, padY, 55, 0x080812, 0.78)
+      .setStrokeStyle(2, 0xffe066, 0.65).setDepth(28).setScrollFactor(0);
+    const objects = [base];
+
+    const move = (dx, dy) => {
+      if (this.locked) return;
+      const idx = this.turn === 1 ? this.p1idx : this.p2idx;
+      const next = this.idxMove(idx, dx, dy);
+      if (this.turn === 1) this.p1idx = next;
+      else this.p2idx = next;
+      SFX.select();
+      this.paint();
+    };
+    const addPadButton = (x, y, label, dx, dy) => {
+      const button = this.add.circle(x, y, 18, 0xffe066, 0.26)
+        .setStrokeStyle(2, 0xffe066, 0.8).setDepth(30).setScrollFactor(0).setInteractive();
+      const text = this.add.text(x, y, label, {
+        fontFamily: 'monospace', fontSize: '18px', color: '#ffffff', fontStyle: 'bold'
+      }).setOrigin(0.5).setDepth(31).setScrollFactor(0);
+      button.on('pointerdown', (pointer, localX, localY, event) => {
+        move(dx, dy);
+        if (event) event.stopPropagation();
+      });
+      objects.push(button, text);
+    };
+
+    addPadButton(padX, padY - 32, '▲', 0, -1);
+    addPadButton(padX - 32, padY, '◀', -1, 0);
+    addPadButton(padX + 32, padY, '▶', 1, 0);
+    addPadButton(padX, padY + 32, '▼', 0, 1);
+
+    const pick = this.add.circle(GAME_W - 68, padY, 38, 0xdd2222, 0.72)
+      .setStrokeStyle(3, 0xffe066, 0.9).setDepth(30).setScrollFactor(0).setInteractive();
+    const pickText = this.add.text(GAME_W - 68, padY, 'PICK', {
+      fontFamily: 'monospace', fontSize: '14px', color: '#ffffff', fontStyle: 'bold'
+    }).setOrigin(0.5).setDepth(31).setScrollFactor(0);
+    pick.on('pointerdown', (pointer, localX, localY, event) => {
+      if (!this.locked) {
+        const idx = this.turn === 1 ? this.p1idx : this.p2idx;
+        this.pick(this.turn, idx);
+      }
+      if (event) event.stopPropagation();
+    });
+    objects.push(pick, pickText);
+
+    this.events.once('shutdown', () => objects.forEach(object => object.destroy()));
   }
 
   // fit a portrait INSIDE its frame (never overflows)
