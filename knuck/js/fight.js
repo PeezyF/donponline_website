@@ -525,7 +525,12 @@ class FightScene extends Phaser.Scene {
     this.assists = [];
     this.fxG = this.add.graphics().setDepth(7);   // limb/impact streaks drawn every frame
 
-    playMusic(this, stage.music, 0.55);
+    this.fightMusicKey = stage.music;
+    this.ensureFightMusic = () => playMusic(this, this.fightMusicKey, 0.62);
+    this.ensureFightMusic();
+    // A fight-control tap is a guaranteed mobile user gesture. Retry here in
+    // case the browser suspended audio during the scene transition.
+    this.input.on('pointerdown', this.ensureFightMusic);
     this.buildHUD(c1, c2);
     this.setupInput();
     if (isTouch()) buildTouchControls(this);
@@ -538,7 +543,10 @@ class FightScene extends Phaser.Scene {
     if (this.mode === 'training') { this.roundActive = true; this.bigText('TRAINING', 900); }
     else this.startRoundIntro();
 
-    this.events.on('shutdown', () => { if (this.touchDestroy) this.touchDestroy(); });
+    this.events.on('shutdown', () => {
+      this.input.off('pointerdown', this.ensureFightMusic);
+      if (this.touchDestroy) this.touchDestroy();
+    });
   }
 
   buildHUD(c1, c2) {
@@ -785,6 +793,7 @@ class FightScene extends Phaser.Scene {
     this.time.delayedCall(1000, () => {
       this.bigText('FIGHT!', 600);
       playVoice(this, 'ann_fight');
+      this.ensureFightMusic();
       this.roundActive = true;
     });
   }
