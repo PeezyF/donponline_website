@@ -251,7 +251,7 @@ class TitleScene extends Phaser.Scene {
   create() {
     this.add.image(GAME_W / 2, GAME_H / 2, 'opening1').setDisplaySize(GAME_W, GAME_H);
     const press = this.add.text(GAME_W / 2, GAME_H * 0.86, isTouch() ? 'TAP TO START' : 'PRESS START', { fontFamily: 'monospace', fontSize: '18px', color: '#ffffff', stroke: '#000', strokeThickness: 4, fontStyle: 'bold' }).setOrigin(0.5);
-    this.add.text(GAME_W - 6, GAME_H - 6, 'v4.1', { fontFamily: 'monospace', fontSize: '10px', color: '#ffe066', stroke: '#000', strokeThickness: 2 }).setOrigin(1, 1);
+    this.add.text(GAME_W - 6, GAME_H - 6, 'v4.2', { fontFamily: 'monospace', fontSize: '10px', color: '#ffe066', stroke: '#000', strokeThickness: 2 }).setOrigin(1, 1);
     this.tweens.add({ targets: press, alpha: 0.15, yoyo: true, repeat: -1, duration: 550 });
     const go = () => { unlockAudio(); SFX.confirm(); this.scene.start('ModeSelect'); };
     this.input.keyboard.once('keydown', go);
@@ -325,7 +325,7 @@ class CharSelectScene extends Phaser.Scene {
     this.k1 = this.input.keyboard.addKeys({ left: K.A, right: K.D, up: K.W, down: K.S, ok: K.F });
     this.k2 = this.input.keyboard.addKeys({ left: K.LEFT, right: K.RIGHT, up: K.UP, down: K.DOWN, ok: K.K });
     this.paint();
-    if (isTouch()) this.buildTouchSelectPad();
+    this.buildTouchSelectPad();
   }
 
   buildTouchSelectPad() {
