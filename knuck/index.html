@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="description" content="Play KNUCK!, the Atlanta fighting game featuring artists and DJs including Don P, Lil Jon, Lil Scrappy, Diamond, Princess, DJ Scream, and more.">
+<meta name="theme-color" content="#05050c">
+<title>KNUCK! | Atlanta Artist &amp; DJ Fighting Game</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #05050c; height: 100%; overflow: hidden; }
+  #game { width: 100vw; height: 100vh; }
+  #game canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
+  .site-home {
+    position: fixed; top: 12px; left: 12px; z-index: 60;
+    padding: 9px 12px; border: 1px solid rgba(255,224,102,.7);
+    background: rgba(5,5,12,.82); color: #ffe066; text-decoration: none;
+    font: 700 11px/1 monospace; letter-spacing: .08em;
+  }
+  .site-home:hover, .site-home:focus-visible { background: #ffe066; color: #05050c; }
+  #scanlines {
+    position: fixed; inset: 0; pointer-events: none; z-index: 50;
+    background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,0.18) 3px);
+    mix-blend-mode: multiply;
+  }
+</style>
+</head>
+<body>
+<a class="site-home" href="../" aria-label="Return to DonPOnline">← DONPONLINE</a>
+<div id="game"></div>
+<div id="scanlines"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.80.1/phaser.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/menus.js"></script>
+<script src="js/fight.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
