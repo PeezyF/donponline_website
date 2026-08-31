@@ -34,10 +34,15 @@ function playMusic(scene, key, vol) {
   if (cur === key) return;
   stopMusic(scene);
   if (!scene.cache.audio.exists(key)) return;
-  const m = scene.sound.add(key, { loop: true, volume: vol === undefined ? 0.6 : vol });
-  m.play();
-  scene.registry.set('musicKey', key);
-  scene.registry.set('musicObj', m);
+  const start = () => {
+    if (!scene.scene.isActive() || scene.registry.get('musicKey') === key) return;
+    const m = scene.sound.add(key, { loop: true, volume: vol === undefined ? 0.6 : vol });
+    m.play();
+    scene.registry.set('musicKey', key);
+    scene.registry.set('musicObj', m);
+  };
+  if (scene.sound.locked) scene.sound.once('unlocked', start);
+  else start();
 }
 function stopMusic(scene) {
   const m = scene.registry.get('musicObj');
@@ -161,9 +166,9 @@ class TitleScene extends Phaser.Scene {
   create() {
     this.add.image(GAME_W / 2, GAME_H / 2, 'opening1').setDisplaySize(GAME_W, GAME_H);
     const press = this.add.text(GAME_W / 2, GAME_H * 0.86, isTouch() ? 'TAP TO START' : 'PRESS START', { fontFamily: 'monospace', fontSize: '18px', color: '#ffffff', stroke: '#000', strokeThickness: 4, fontStyle: 'bold' }).setOrigin(0.5);
-    this.add.text(GAME_W - 6, GAME_H - 6, 'v3.6', { fontFamily: 'monospace', fontSize: '10px', color: '#ffe066', stroke: '#000', strokeThickness: 2 }).setOrigin(1, 1);
+    this.add.text(GAME_W - 6, GAME_H - 6, 'v3.7', { fontFamily: 'monospace', fontSize: '10px', color: '#ffe066', stroke: '#000', strokeThickness: 2 }).setOrigin(1, 1);
     this.tweens.add({ targets: press, alpha: 0.15, yoyo: true, repeat: -1, duration: 550 });
-    const go = () => { SFX.ensure(); SFX.confirm(); this.scene.start('ModeSelect'); };
+    const go = () => { unlockAudio(); SFX.confirm(); this.scene.start('ModeSelect'); };
     this.input.keyboard.once('keydown', go);
     this.input.once('pointerdown', go);
     if (this.input.gamepad) this.input.gamepad.once('down', go);

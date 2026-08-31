@@ -95,6 +95,9 @@
       panel.hidden = true;
       document.body.classList.remove('instructions-open');
       openButton.focus();
+      // audio.js is loaded later; the captured click also unlocks sound, while
+      // this hook makes the intent explicit if script loading has completed.
+      if (typeof unlockAudio === 'function') unlockAudio();
     };
     openButton.addEventListener('click', showMoves);
     closeButton.addEventListener('click', hideMoves);
@@ -109,9 +112,9 @@
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.80.1/phaser.min.js"></script>
 <script src="js/data.js"></script>
-<script src="js/audio.js"></script>
-<script src="js/menus.js"></script>
+<script src="js/audio.js?v=3.7"></script>
+<script src="js/menus.js?v=3.7"></script>
 <script src="js/fight.js"></script>
-<script src="js/main.js"></script>
+<script src="js/main.js?v=3.7"></script>
 </body>
 </html>

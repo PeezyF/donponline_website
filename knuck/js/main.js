@@ -13,6 +13,7 @@ const game = new Phaser.Game({
   input: { gamepad: true, activePointers: 4 },
   scene: [IntroScene, BootScene, TitleScene, ModeSelectScene, CharSelectScene, StageSelectScene, LadderScene, FightScene]
 });
+window.knuckGame = game;
 
 // F9 toggles CRT scanlines overlay
 window.addEventListener('keydown', e => {

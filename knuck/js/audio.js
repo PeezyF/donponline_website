@@ -6,7 +6,7 @@ const SFX = {
   ctx: null,
   ensure() {
     if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-    if (this.ctx.state === 'suspended') this.ctx.resume();
+    if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
     return this.ctx;
   },
   _noise(dur, vol, filterFreq, decay) {
@@ -43,6 +43,29 @@ const SFX = {
   confirm() { this._tone(440, 0.07, 0.2, 'square'); this._tone(880, 0.12, 0.2, 'square'); },
   timer()   { this._tone(880, 0.05, 0.1, 'square'); }
 };
+
+// Mobile browsers create/suspend WebAudio contexts independently. Resume both
+// Phaser's context and the procedural-SFX context from the same user gesture.
+function unlockAudio() {
+  const contexts = [];
+  const phaserSound = window.knuckGame && window.knuckGame.sound;
+
+  if (phaserSound) {
+    if (typeof phaserSound.unlock === 'function' && phaserSound.locked) phaserSound.unlock();
+    if (phaserSound.context) contexts.push(phaserSound.context);
+  }
+
+  contexts.push(SFX.ensure().ctx);
+  for (const ctx of contexts) {
+    if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {});
+  }
+}
+
+// Capture the earliest real touch. In particular, the move-list overlay can
+// otherwise consume the gesture before Phaser gets a chance to unlock audio.
+for (const eventName of ['pointerdown', 'touchend', 'click']) {
+  window.addEventListener(eventName, unlockAudio, { capture: true, passive: true });
+}
 
 // Play a voice clip if it was successfully loaded; skip silently otherwise
 function playVoice(scene, key, vol) {
