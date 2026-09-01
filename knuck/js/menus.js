@@ -251,7 +251,7 @@ class TitleScene extends Phaser.Scene {
   create() {
     this.add.image(GAME_W / 2, GAME_H / 2, 'opening1').setDisplaySize(GAME_W, GAME_H);
     const press = this.add.text(GAME_W / 2, GAME_H * 0.86, isTouch() ? 'TAP TO START' : 'PRESS START', { fontFamily: 'monospace', fontSize: '18px', color: '#ffffff', stroke: '#000', strokeThickness: 4, fontStyle: 'bold' }).setOrigin(0.5);
-    this.add.text(GAME_W - 6, GAME_H - 6, 'v4.2', { fontFamily: 'monospace', fontSize: '10px', color: '#ffe066', stroke: '#000', strokeThickness: 2 }).setOrigin(1, 1);
+    this.add.text(GAME_W - 6, GAME_H - 6, 'v4.3', { fontFamily: 'monospace', fontSize: '10px', color: '#ffe066', stroke: '#000', strokeThickness: 2 }).setOrigin(1, 1);
     this.tweens.add({ targets: press, alpha: 0.15, yoyo: true, repeat: -1, duration: 550 });
     const go = () => { unlockAudio(); SFX.confirm(); this.scene.start('ModeSelect'); };
     this.input.keyboard.once('keydown', go);
@@ -317,6 +317,7 @@ class CharSelectScene extends Phaser.Scene {
 
     this.p1idx = 0; this.p2idx = 8;
     this.turn = 1;
+    this.locked = false;
     this.p1pick = null; this.p2pick = null;
     // status line BELOW the grid - never overlaps fighters
     this.turnText = this.add.text(GAME_W / 2, 340, 'PLAYER 1 - PICK', { fontFamily: 'monospace', fontSize: '13px', color: '#ff5555', stroke: '#000', strokeThickness: 3, fontStyle: 'bold' }).setOrigin(0.5);
@@ -324,13 +325,14 @@ class CharSelectScene extends Phaser.Scene {
     const K = Phaser.Input.Keyboard.KeyCodes;
     this.k1 = this.input.keyboard.addKeys({ left: K.A, right: K.D, up: K.W, down: K.S, ok: K.F });
     this.k2 = this.input.keyboard.addKeys({ left: K.LEFT, right: K.RIGHT, up: K.UP, down: K.DOWN, ok: K.K });
+    this.backKey = this.input.keyboard.addKey(K.ESC);
     this.paint();
     this.buildTouchSelectPad();
   }
 
   buildTouchSelectPad() {
-    const padX = 68, padY = 298;
-    const base = this.add.circle(padX, padY, 55, 0x080812, 0.78)
+    const padX = 62, padY = 282;
+    const base = this.add.circle(padX, padY, 49, 0x080812, 0.78)
       .setStrokeStyle(2, 0xffe066, 0.65).setDepth(28).setScrollFactor(0);
     const objects = [base];
 
@@ -344,10 +346,10 @@ class CharSelectScene extends Phaser.Scene {
       this.paint();
     };
     const addPadButton = (x, y, label, dx, dy) => {
-      const button = this.add.circle(x, y, 18, 0xffe066, 0.26)
+      const button = this.add.circle(x, y, 16, 0xffe066, 0.26)
         .setStrokeStyle(2, 0xffe066, 0.8).setDepth(30).setScrollFactor(0).setInteractive();
       const text = this.add.text(x, y, label, {
-        fontFamily: 'monospace', fontSize: '18px', color: '#ffffff', fontStyle: 'bold'
+        fontFamily: 'monospace', fontSize: '16px', color: '#ffffff', fontStyle: 'bold'
       }).setOrigin(0.5).setDepth(31).setScrollFactor(0);
       button.on('pointerdown', (pointer, localX, localY, event) => {
         move(dx, dy);
@@ -356,14 +358,14 @@ class CharSelectScene extends Phaser.Scene {
       objects.push(button, text);
     };
 
-    addPadButton(padX, padY - 32, '▲', 0, -1);
-    addPadButton(padX - 32, padY, '◀', -1, 0);
-    addPadButton(padX + 32, padY, '▶', 1, 0);
-    addPadButton(padX, padY + 32, '▼', 0, 1);
+    addPadButton(padX, padY - 29, '▲', 0, -1);
+    addPadButton(padX - 29, padY, '◀', -1, 0);
+    addPadButton(padX + 29, padY, '▶', 1, 0);
+    addPadButton(padX, padY + 29, '▼', 0, 1);
 
-    const pick = this.add.circle(GAME_W - 68, padY, 38, 0xdd2222, 0.72)
+    const pick = this.add.circle(GAME_W - 62, padY, 34, 0xdd2222, 0.72)
       .setStrokeStyle(3, 0xffe066, 0.9).setDepth(30).setScrollFactor(0).setInteractive();
-    const pickText = this.add.text(GAME_W - 68, padY, 'PICK', {
+    const pickText = this.add.text(GAME_W - 62, padY, 'PICK', {
       fontFamily: 'monospace', fontSize: '14px', color: '#ffffff', fontStyle: 'bold'
     }).setOrigin(0.5).setDepth(31).setScrollFactor(0);
     pick.on('pointerdown', (pointer, localX, localY, event) => {
@@ -375,7 +377,40 @@ class CharSelectScene extends Phaser.Scene {
     });
     objects.push(pick, pickText);
 
+    const back = this.add.rectangle(48, 22, 78, 28, 0x11111b, 0.92)
+      .setStrokeStyle(2, 0xffe066, 0.85).setDepth(30).setScrollFactor(0).setInteractive();
+    const backText = this.add.text(48, 22, '← BACK', {
+      fontFamily: 'monospace', fontSize: '11px', color: '#ffffff', fontStyle: 'bold'
+    }).setOrigin(0.5).setDepth(31).setScrollFactor(0);
+    back.on('pointerdown', (pointer, localX, localY, event) => {
+      this.goBack();
+      if (event) event.stopPropagation();
+    });
+    objects.push(back, backText);
+
     this.events.once('shutdown', () => objects.forEach(object => object.destroy()));
+  }
+
+  goBack() {
+    SFX.select();
+    if (this.locked && this.pickTimer) {
+      this.pickTimer.remove(false);
+      this.pickTimer = null;
+      this.locked = false;
+      this.paint();
+      return;
+    }
+    if (this.turn === 2 && this.p1pick !== null) {
+      this.turn = 1;
+      this.p1pick = null;
+      this.p2pick = null;
+      this.portraitR.setVisible(false);
+      this.nameR.setText('');
+      this.turnText.setText('PLAYER 1 - PICK').setColor('#ff5555');
+      this.paint();
+      return;
+    }
+    this.scene.start('ModeSelect');
   }
 
   // fit a portrait INSIDE its frame (never overflows)
@@ -429,7 +464,8 @@ class CharSelectScene extends Phaser.Scene {
     this.tweens.add({ targets: shine, x: px + 95, duration: 480, ease: 'Cubic.easeInOut', onComplete: () => { shine.destroy(); mask.destroy(); } });
     this.tweens.add({ targets: img, scaleX: img.scaleX * 1.07, scaleY: img.scaleY * 1.07, duration: 200, yoyo: true, ease: 'Quad.easeOut' });
 
-    this.time.delayedCall(1050, () => {
+    this.pickTimer = this.time.delayedCall(1050, () => {
+      this.pickTimer = null;
       this.locked = false;
       if (turn === 1) {
         this.p1pick = idx;
@@ -457,6 +493,7 @@ class CharSelectScene extends Phaser.Scene {
   }
 
   update() {
+    if (Phaser.Input.Keyboard.JustDown(this.backKey)) { this.goBack(); return; }
     if (this.locked) { padEdges(this, 0, 'cs'); padEdges(this, 1, 'cs'); return; }
     const pe0 = padEdges(this, 0, 'cs');
     const pe1 = padEdges(this, 1, 'cs');
