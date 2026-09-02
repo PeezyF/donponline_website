@@ -876,6 +876,10 @@ class FightScene extends Phaser.Scene {
       this.startDonPFinisher(winner, loser);
       return;
     }
+    if (winner.roundsWon >= 2 && winner.cfg.id === 'liljon') {
+      this.startLilJonFinisher(winner, loser);
+      return;
+    }
     winner.setState('win');
     playVoice(this, winner.cfg.id + '_win');
     this.bigText(winner.cfg.name + ' WINS', 1200);
@@ -956,6 +960,88 @@ class FightScene extends Phaser.Scene {
 
         // Let the launch hang for a full beat before returning to the match result.
         this.time.delayedCall(1750, () => {
+          this.slowmo = 1;
+          this.cameras.main.zoomTo(1, 320, 'Sine.easeInOut');
+          this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
+          this.tweens.add({ targets: curtain, alpha: 0, duration: 280, onComplete: () => curtain.destroy() });
+          this.endMatch(winner, loser);
+        });
+      });
+    });
+  }
+
+  startLilJonFinisher(winner, loser) {
+    const facing = loser.x >= winner.x ? 1 : -1;
+    winner.facing = facing;
+    loser.facing = -facing;
+    winner.setState('idle');
+    loser.setState('hitstun');
+    loser.hitstun = 9999;
+    stopMusic(this);
+
+    const curtain = this.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, 0x02040a, 0).setDepth(5);
+    curtain.setStrokeStyle(3, 0x168dcc, 0.9);
+    this.tweens.add({ targets: curtain, alpha: 0.5, duration: 520, ease: 'Sine.easeOut' });
+    this.centerText.setColor('#ff2b22').setFontSize(46).setScale(1.08);
+    this.bigText('END CAREER', 1700, 'LIL JON FINISHER');
+    this.tweens.add({ targets: this.centerText, scaleX: 1.28, scaleY: 1.28, duration: 270, yoyo: true, repeat: 3, ease: 'Sine.easeInOut' });
+    this.cameras.main.flash(240, 80, 0, 0, false);
+    this.cameras.main.zoomTo(1.055, 1400, 'Sine.easeInOut');
+
+    this.time.delayedCall(1750, () => {
+      this.slowmo = 0.32;
+      winner.special = winner.cfg.special1;
+      winner.specialSlot = 1;
+      winner.specialDone = true;
+      winner.setState('special');
+      playVoice(this, 'liljon_win', 1.15);
+
+      const screamX = winner.x + facing * winner.w * 0.75;
+      const screamY = winner.y - winner.cfg.height * 0.78;
+      this.shockRing(screamX, screamY, 0xffffff);
+      this.time.delayedCall(150, () => this.shockRing(screamX + facing * 8, screamY, 0x33ddff));
+      this.time.delayedCall(300, () => this.shockRing(screamX + facing * 14, screamY, 0xff3344));
+      this.cameras.main.shake(760, 0.009);
+
+      this.time.delayedCall(620, () => {
+        const textureKey = loser.cfg.id;
+        const source = this.textures.get(textureKey).getSourceImage();
+        const cutY = Math.floor(source.height * 0.27);
+        const flip = loser.facing === -1;
+        const body = this.add.image(loser.x, loser.y, textureKey).setOrigin(0.5, 1).setScale(loser.baseScale).setFlipX(flip).setDepth(6);
+        const head = this.add.image(loser.x, loser.y, textureKey).setOrigin(0.5, 1).setScale(loser.baseScale).setFlipX(flip).setDepth(8);
+        body.setCrop(0, cutY, source.width, source.height - cutY);
+        head.setCrop(0, 0, source.width, cutY);
+        loser.sprite.setVisible(false);
+        loser.setState('ko');
+
+        const neckY = loser.y - loser.cfg.height * 0.74;
+        SFX.heavyHit();
+        this.cameras.main.flash(130, 255, 245, 220, false);
+        this.cameras.main.shake(520, 0.032);
+        this.sparkAt(loser.x, neckY, 0x55ddff, 18);
+        this.impactSprayAt(loser.x, neckY, facing, true);
+        this.impactSprayAt(loser.x, neckY - 5, facing, true);
+        this.hitPause(210);
+
+        this.tweens.add({
+          targets: head,
+          x: Phaser.Math.Clamp(loser.x + facing * 165, 24, GAME_W - 24),
+          y: loser.y - 235,
+          angle: facing * 760,
+          duration: 1450,
+          ease: 'Cubic.easeOut'
+        });
+        this.time.delayedCall(260, () => {
+          this.tweens.add({ targets: body, angle: -facing * 82, y: body.y + 10, duration: 620, ease: 'Bounce.easeOut' });
+        });
+
+        this.time.delayedCall(950, () => {
+          winner.special = null;
+          winner.setState('win');
+        });
+
+        this.time.delayedCall(2100, () => {
           this.slowmo = 1;
           this.cameras.main.zoomTo(1, 320, 'Sine.easeInOut');
           this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
