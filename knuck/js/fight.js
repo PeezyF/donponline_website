@@ -936,6 +936,10 @@ class FightScene extends Phaser.Scene {
       this.startDjMontayFinisher(winner, loser);
       return;
     }
+    if (winner.roundsWon >= 2 && winner.cfg.id === 'djscream') {
+      this.startDjScreamFinisher(winner, loser);
+      return;
+    }
     winner.setState('win');
     playVoice(this, winner.cfg.id + '_win');
     this.bigText(winner.cfg.name + ' WINS', 1200);
@@ -1816,6 +1820,171 @@ class FightScene extends Phaser.Scene {
             this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
             this.tweens.add({ targets: curtain, alpha: 0, duration: 300, onComplete: () => curtain.destroy() });
             this.endMatch(winner, loser);
+          });
+        });
+      });
+    });
+  }
+
+  startDjScreamFinisher(winner, loser) {
+    const facing = loser.x >= winner.x ? 1 : -1;
+    winner.facing = facing;
+    loser.facing = -facing;
+    winner.setState('idle');
+    loser.setState('hitstun');
+    loser.hitstun = 9999;
+    stopMusic(this);
+
+    const curtain = this.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, 0x050108, 0).setDepth(5);
+    curtain.setStrokeStyle(4, 0xffd52a, 0.95);
+    this.tweens.add({ targets: curtain, alpha: 0.5, duration: 560, ease: 'Sine.easeOut' });
+    this.centerText.setColor('#ffe039').setFontSize(46).setScale(1.08);
+    this.bigText('END CAREER', 1800, 'DJ SCREAM · SCREAM TEAM SKY DROP');
+    this.tweens.add({ targets: this.centerText, scaleX: 1.3, scaleY: 1.3, duration: 280, yoyo: true, repeat: 3, ease: 'Sine.easeInOut' });
+    this.cameras.main.flash(250, 120, 20, 130, false);
+    this.cameras.main.zoomTo(1.06, 1400, 'Sine.easeInOut');
+
+    const finishX = Phaser.Math.Clamp(loser.x - facing * (winner.w * 0.48 + loser.w * 0.34), 44, GAME_W - 44);
+    this.time.delayedCall(360, () => {
+      this.tweens.add({ targets: winner, x: finishX, duration: 1260, ease: 'Sine.easeInOut' });
+    });
+
+    this.time.delayedCall(1800, () => {
+      this.slowmo = 0.36;
+      winner.special = winner.cfg.special2;
+      winner.specialSlot = 2;
+      winner.specialDone = true;
+      winner.setState('special');
+      playVoice(this, 'djscream_s2', 1.12);
+      SFX.special();
+
+      const groundY = loser.y;
+      const airX = Phaser.Math.Clamp((winner.x + loser.x) * 0.5 + facing * 28, 80, GAME_W - 80);
+      const victim = this.add.image(loser.x, groundY, loser.cfg.id)
+        .setOrigin(0.5, 1)
+        .setScale(loser.baseScale)
+        .setFlipX(loser.facing === -1)
+        .setDepth(8);
+      loser.sprite.setVisible(false);
+      loser.setState('ko');
+
+      SFX.heavyHit();
+      this.cameras.main.shake(380, 0.018);
+      this.sparkAt(loser.x, loser.y - loser.cfg.height * 0.68, 0xffdf39, 18);
+      this.tweens.add({
+        targets: victim,
+        x: airX,
+        y: -95,
+        angle: facing * 145,
+        duration: 980,
+        ease: 'Cubic.easeOut'
+      });
+
+      this.time.delayedCall(300, () => {
+        const jumpKey = this.textures.exists('djscream_jump') ? 'djscream_jump' : 'djscream_special2';
+        const jumper = this.add.image(winner.x, winner.y, jumpKey)
+          .setOrigin(0.5, 1)
+          .setScale(winner.baseScale)
+          .setFlipX(facing === -1)
+          .setDepth(9);
+        winner.sprite.setVisible(false);
+        this.tweens.add({
+          targets: jumper,
+          x: airX - facing * 34,
+          y: -65,
+          angle: facing * 18,
+          duration: 800,
+          ease: 'Cubic.easeOut'
+        });
+
+        this.time.delayedCall(1050, () => {
+          this.slowmo = 0.25;
+          this.shockRing(airX, 42, 0xffe34a);
+          this.cameras.main.zoomTo(1.1, 260, 'Sine.easeInOut');
+          this.cameras.main.shake(300, 0.012);
+
+          this.tweens.add({
+            targets: victim,
+            x: airX + facing * 22,
+            y: groundY,
+            angle: -facing * 88,
+            duration: 640,
+            ease: 'Cubic.easeIn'
+          });
+          this.tweens.add({
+            targets: jumper,
+            x: airX - facing * 18,
+            y: groundY - 15,
+            angle: -facing * 12,
+            duration: 700,
+            ease: 'Cubic.easeIn'
+          });
+
+          this.time.delayedCall(640, () => {
+            const blastX = victim.x;
+            const blastY = groundY - 10;
+            const textureKey = loser.cfg.id;
+            const source = this.textures.get(textureKey).getSourceImage();
+            const cols = 3;
+            const rows = 4;
+            const pieceW = Math.ceil(source.width / cols);
+            const pieceH = Math.ceil(source.height / rows);
+
+            victim.destroy();
+            SFX.ko();
+            SFX.heavyHit();
+            this.cameras.main.flash(230, 255, 235, 180, false);
+            this.cameras.main.shake(950, 0.065);
+            this.shockRing(blastX, blastY, 0xffd52a);
+            this.sparkAt(blastX, blastY, 0xffee72, 48);
+            this.impactSprayAt(blastX, blastY - 18, facing, true);
+            this.impactSprayAt(blastX, blastY - 42, -facing, true);
+            this.time.delayedCall(120, () => this.impactSprayAt(blastX, blastY - 28, facing, true));
+            this.hitPause(300);
+
+            this.add.ellipse(blastX, groundY - 2, Math.max(58, loser.w * 1.15), 17, 0x5b0610, 0.88)
+              .setStrokeStyle(3, 0x210004, 0.9).setDepth(7);
+
+            for (let row = 0; row < rows; row++) {
+              for (let col = 0; col < cols; col++) {
+                const piece = this.add.image(blastX, groundY, textureKey)
+                  .setOrigin(0.5, 1)
+                  .setScale(loser.baseScale)
+                  .setFlipX(loser.facing === -1)
+                  .setDepth(8);
+                piece.setCrop(
+                  col * pieceW,
+                  row * pieceH,
+                  Math.min(pieceW, source.width - col * pieceW),
+                  Math.min(pieceH, source.height - row * pieceH)
+                );
+                this.tweens.add({
+                  targets: piece,
+                  x: Phaser.Math.Clamp(blastX + Phaser.Math.Between(-145, 145), 18, GAME_W - 18),
+                  y: groundY - Phaser.Math.Between(45, 190),
+                  angle: Phaser.Math.Between(-680, 680),
+                  duration: Phaser.Math.Between(760, 1250),
+                  ease: 'Cubic.easeOut',
+                  onComplete: () => this.tweens.add({ targets: piece, y: groundY + 5, alpha: 0.45, duration: 520, ease: 'Quad.easeIn' })
+                });
+              }
+            }
+
+            this.time.delayedCall(460, () => {
+              jumper.destroy();
+              winner.sprite.setVisible(true);
+              winner.special = null;
+              winner.setState('win');
+              playVoice(this, 'djscream_win');
+            });
+
+            this.time.delayedCall(2250, () => {
+              this.slowmo = 1;
+              this.cameras.main.zoomTo(1, 340, 'Sine.easeInOut');
+              this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
+              this.tweens.add({ targets: curtain, alpha: 0, duration: 300, onComplete: () => curtain.destroy() });
+              this.endMatch(winner, loser);
+            });
           });
         });
       });
