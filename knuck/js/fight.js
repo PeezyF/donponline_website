@@ -2053,6 +2053,13 @@ class FightScene extends Phaser.Scene {
   }
 
   endMatch(winner) {
+    const careerEnderIds = ['donp', 'liljon', 'scrappy', 'bonecrusher', 'pastortroy', 'princess', 'diamond', 'djmontay', 'djscream'];
+    if (!this.careerEnderStamped && careerEnderIds.includes(winner.cfg.id)) {
+      this.careerEnderStamped = true;
+      this.showCareerEnderStamp(winner);
+      this.time.delayedCall(2300, () => this.endMatch(winner));
+      return;
+    }
     this.matchOver = true;
     stopMusic(this);
     if (!this.coinRewardSettled && window.KNUCK_COINS) {
@@ -2067,6 +2074,39 @@ class FightScene extends Phaser.Scene {
     } else {
       this.showEndPanel(winner.cfg.name + ' WINS THE MATCH');
     }
+  }
+
+  showCareerEnderStamp(winner) {
+    const stamp = this.add.container(GAME_W / 2, GAME_H * 0.39).setDepth(60).setScale(2.6).setAlpha(0);
+    const shadow = this.add.text(7, 8, 'CAREER ENDER', {
+      fontFamily: 'Impact, Haettenschweiler, sans-serif', fontSize: '58px', color: '#180000',
+      stroke: '#000000', strokeThickness: 12, fontStyle: 'bold'
+    }).setOrigin(0.5);
+    const title = this.add.text(0, 0, 'CAREER ENDER', {
+      fontFamily: 'Impact, Haettenschweiler, sans-serif', fontSize: '58px', color: '#ff271c',
+      stroke: '#f2e6cf', strokeThickness: 3, fontStyle: 'bold'
+    }).setOrigin(0.5);
+    const subtitle = this.add.text(0, 62, winner.cfg.name.toUpperCase() + ' FINISHES IT', {
+      fontFamily: 'monospace', fontSize: '15px', color: '#ffd235',
+      stroke: '#000000', strokeThickness: 5, fontStyle: 'bold'
+    }).setOrigin(0.5);
+    const topRule = this.add.rectangle(0, -48, 570, 5, 0xff251b, 0.95);
+    const bottomRule = this.add.rectangle(0, 48, 570, 5, 0xff251b, 0.95);
+    const back = this.add.rectangle(0, 7, 650, 126, 0x050000, 0.86)
+      .setStrokeStyle(4, 0x8f0808, 1);
+    stamp.add([back, shadow, topRule, bottomRule, title, subtitle]);
+
+    this.cameras.main.flash(190, 150, 0, 0, false);
+    this.cameras.main.shake(480, 0.025);
+    this.tweens.add({ targets: stamp, alpha: 1, scaleX: 1, scaleY: 1, duration: 280, ease: 'Back.easeOut' });
+    this.tweens.add({ targets: title, scaleX: 1.08, scaleY: 1.08, duration: 180, yoyo: true, repeat: 5, ease: 'Sine.easeInOut' });
+    this.tweens.add({ targets: [topRule, bottomRule], scaleX: 1.12, duration: 240, yoyo: true, repeat: 3, ease: 'Sine.easeInOut' });
+    this.time.delayedCall(1850, () => {
+      this.tweens.add({
+        targets: stamp, alpha: 0, scaleX: 1.35, scaleY: 1.35, duration: 360,
+        ease: 'Cubic.easeIn', onComplete: () => stamp.destroy()
+      });
+    });
   }
 
   showEndPanel(title) {
