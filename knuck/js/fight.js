@@ -739,6 +739,34 @@ class FightScene extends Phaser.Scene {
       sprayPixel(i % 3 ? 0xb20d1d : 0x650611, Phaser.Math.Between(2, heavy ? 5 : 3), spread, Phaser.Math.Between(16, 46), Phaser.Math.Between(16, 38), Phaser.Math.Between(15, 70));
     }
   }
+  boneDustAt(x, y, count, dir) {
+    const colors = [0xffffff, 0xf0e7cf, 0xd2c29e, 0x8d816d];
+    for (let i = 0; i < count; i++) {
+      const color = colors[Phaser.Math.Between(0, colors.length - 1)];
+      const w = Phaser.Math.Between(2, 6);
+      const h = Phaser.Math.Between(1, 3);
+      const chip = this.add.rectangle(x, y, w, h, color, Phaser.Math.FloatBetween(0.65, 1)).setDepth(8).setAngle(Phaser.Math.Between(-90, 90));
+      const dx = dir * Phaser.Math.Between(18, 90) + Phaser.Math.Between(-65, 65);
+      const rise = Phaser.Math.Between(18, 90);
+      this.tweens.add({
+        targets: chip,
+        x: x + dx * 0.55,
+        y: y - rise,
+        angle: chip.angle + Phaser.Math.Between(-160, 160),
+        duration: Phaser.Math.Between(160, 300),
+        ease: 'Quad.easeOut',
+        onComplete: () => this.tweens.add({
+          targets: chip,
+          x: x + dx,
+          y: y + Phaser.Math.Between(18, 70),
+          alpha: 0,
+          duration: Phaser.Math.Between(420, 850),
+          ease: 'Quad.easeIn',
+          onComplete: () => chip.destroy()
+        })
+      });
+    }
+  }
   trailAt(x, y, color) {
     const r = this.add.rectangle(x, y, 40, 60, color, 0.4).setDepth(4);
     this.tweens.add({ targets: r, alpha: 0, scaleX: 1.6, duration: 220, onComplete: () => r.destroy() });
@@ -882,6 +910,10 @@ class FightScene extends Phaser.Scene {
     }
     if (winner.roundsWon >= 2 && winner.cfg.id === 'scrappy') {
       this.startScrappyFinisher(winner, loser);
+      return;
+    }
+    if (winner.roundsWon >= 2 && winner.cfg.id === 'bonecrusher') {
+      this.startBoneCrusherFinisher(winner, loser);
       return;
     }
     winner.setState('win');
@@ -1159,6 +1191,100 @@ class FightScene extends Phaser.Scene {
           this.cameras.main.zoomTo(1, 320, 'Sine.easeInOut');
           this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
           this.tweens.add({ targets: curtain, alpha: 0, duration: 280, onComplete: () => curtain.destroy() });
+          this.endMatch(winner, loser);
+        });
+      });
+    });
+  }
+
+  startBoneCrusherFinisher(winner, loser) {
+    const facing = loser.x >= winner.x ? 1 : -1;
+    winner.facing = facing;
+    loser.facing = -facing;
+    winner.setState('idle');
+    loser.setState('hitstun');
+    loser.hitstun = 9999;
+    stopMusic(this);
+
+    const curtain = this.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, 0x070503, 0).setDepth(5);
+    curtain.setStrokeStyle(4, 0xc77824, 0.9);
+    this.tweens.add({ targets: curtain, alpha: 0.5, duration: 560, ease: 'Sine.easeOut' });
+    this.centerText.setColor('#ff9b32').setFontSize(46).setScale(1.08);
+    this.bigText('END CAREER', 1750, 'BONE CRUSHER · SEISMIC CRUSH');
+    this.tweens.add({ targets: this.centerText, scaleX: 1.3, scaleY: 1.3, duration: 290, yoyo: true, repeat: 3, ease: 'Sine.easeInOut' });
+    this.cameras.main.flash(260, 120, 70, 15, false);
+    this.cameras.main.zoomTo(1.06, 1450, 'Sine.easeInOut');
+
+    const finishX = Phaser.Math.Clamp(loser.x - facing * (winner.w * 0.5 + loser.w * 0.35), 48, GAME_W - 48);
+    this.time.delayedCall(340, () => {
+      this.tweens.add({ targets: winner, x: finishX, duration: 1320, ease: 'Sine.easeInOut' });
+    });
+
+    this.time.delayedCall(1800, () => {
+      this.slowmo = 0.42;
+      playVoice(this, 'bonecrusher_s2', 1.08);
+      SFX.special();
+
+      const gripKey = this.textures.exists('bonecrusher_special2') ? 'bonecrusher_special2' : 'bonecrusher_punch';
+      const grip = this.add.image(winner.x, winner.y, gripKey).setOrigin(0.5, 1).setScale(winner.baseScale).setFlipX(facing === -1).setDepth(7);
+      winner.sprite.setVisible(false);
+      const victim = this.add.image(loser.x, loser.y, loser.cfg.id).setOrigin(0.5, 1).setScale(loser.baseScale).setFlipX(loser.facing === -1).setDepth(6);
+      loser.sprite.setVisible(false);
+      loser.setState('ko');
+
+      const holdX = Phaser.Math.Clamp(winner.x + facing * (winner.w * 0.4), 34, GAME_W - 34);
+      this.tweens.add({ targets: victim, x: holdX, y: winner.y - 5, angle: -facing * 5, duration: 460, ease: 'Back.easeIn' });
+      this.tweens.add({ targets: grip, scaleX: winner.baseScale * 1.06, scaleY: winner.baseScale * 1.03, duration: 230, yoyo: true, repeat: 1, ease: 'Power2' });
+      this.cameras.main.shake(420, 0.008);
+
+      const crunches = [0, 380, 800, 1260];
+      crunches.forEach((delay, index) => {
+        this.time.delayedCall(520 + delay, () => {
+          const power = index + 1;
+          const targetScaleX = loser.baseScale * Math.max(0.3, 0.9 - power * 0.14);
+          const targetScaleY = loser.baseScale * Math.max(0.28, 0.98 - power * 0.17);
+          SFX.heavyHit();
+          this.cameras.main.shake(180 + power * 70, 0.01 + power * 0.005);
+          this.cameras.main.flash(55 + power * 15, 235, 225, 190, false);
+          this.sparkAt(victim.x, victim.y - loser.cfg.height * targetScaleY / loser.baseScale * 0.58, 0xf1e5bf, 7 + power * 3);
+          this.boneDustAt(victim.x, victim.y - loser.cfg.height * 0.5, 5 + power * 3, facing);
+          this.hitPause(70 + power * 25);
+          this.tweens.add({
+            targets: victim,
+            scaleX: targetScaleX,
+            scaleY: targetScaleY,
+            y: winner.y + power * 4,
+            angle: facing * (power % 2 ? 7 : -7),
+            duration: 210,
+            ease: 'Back.easeIn'
+          });
+          this.tweens.add({ targets: grip, scaleX: winner.baseScale * (1.05 + power * 0.025), scaleY: winner.baseScale * 0.97, duration: 120, yoyo: true, ease: 'Power2' });
+        });
+      });
+
+      this.time.delayedCall(2260, () => {
+        const dustY = victim.y - loser.cfg.height * 0.22;
+        SFX.ko();
+        this.cameras.main.flash(190, 255, 240, 195, false);
+        this.cameras.main.shake(760, 0.052);
+        this.shockRing(victim.x, dustY, 0xd8c59d);
+        this.boneDustAt(victim.x, dustY, 46, facing);
+        this.sparkAt(victim.x, dustY, 0xffffff, 26);
+        this.hitPause(260);
+        this.tweens.add({ targets: victim, scaleX: 0.03, scaleY: 0.03, alpha: 0, y: winner.y + 16, duration: 260, ease: 'Back.easeIn', onComplete: () => victim.destroy() });
+
+        this.time.delayedCall(720, () => {
+          grip.destroy();
+          winner.sprite.setVisible(true);
+          winner.setState('win');
+          playVoice(this, 'bonecrusher_win');
+        });
+
+        this.time.delayedCall(2100, () => {
+          this.slowmo = 1;
+          this.cameras.main.zoomTo(1, 340, 'Sine.easeInOut');
+          this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
+          this.tweens.add({ targets: curtain, alpha: 0, duration: 300, onComplete: () => curtain.destroy() });
           this.endMatch(winner, loser);
         });
       });
