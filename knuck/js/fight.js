@@ -880,6 +880,10 @@ class FightScene extends Phaser.Scene {
       this.startLilJonFinisher(winner, loser);
       return;
     }
+    if (winner.roundsWon >= 2 && winner.cfg.id === 'scrappy') {
+      this.startScrappyFinisher(winner, loser);
+      return;
+    }
     winner.setState('win');
     playVoice(this, winner.cfg.id + '_win');
     this.bigText(winner.cfg.name + ' WINS', 1200);
@@ -1042,6 +1046,115 @@ class FightScene extends Phaser.Scene {
         });
 
         this.time.delayedCall(2100, () => {
+          this.slowmo = 1;
+          this.cameras.main.zoomTo(1, 320, 'Sine.easeInOut');
+          this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
+          this.tweens.add({ targets: curtain, alpha: 0, duration: 280, onComplete: () => curtain.destroy() });
+          this.endMatch(winner, loser);
+        });
+      });
+    });
+  }
+
+  startScrappyFinisher(winner, loser) {
+    const facing = loser.x >= winner.x ? 1 : -1;
+    winner.facing = facing;
+    loser.facing = -facing;
+    winner.setState('idle');
+    loser.setState('hitstun');
+    loser.hitstun = 9999;
+    stopMusic(this);
+
+    const curtain = this.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, 0x080202, 0).setDepth(5);
+    curtain.setStrokeStyle(3, 0xff6a22, 0.9);
+    this.tweens.add({ targets: curtain, alpha: 0.46, duration: 480, ease: 'Sine.easeOut' });
+    this.centerText.setColor('#ff3a24').setFontSize(46).setScale(1.08);
+    this.bigText('END CAREER', 1550, 'LIL SCRAPPY · HEAD BUSSA');
+    this.tweens.add({ targets: this.centerText, scaleX: 1.28, scaleY: 1.28, duration: 250, yoyo: true, repeat: 3, ease: 'Sine.easeInOut' });
+    this.cameras.main.flash(220, 120, 15, 0, false);
+    this.cameras.main.zoomTo(1.06, 1250, 'Sine.easeInOut');
+
+    const finishX = Phaser.Math.Clamp(loser.x - facing * (winner.w + loser.w - 18), 40, GAME_W - 40);
+    this.time.delayedCall(360, () => {
+      this.tweens.add({ targets: winner, x: finishX, duration: 1180, ease: 'Sine.easeInOut' });
+    });
+
+    this.time.delayedCall(1650, () => {
+      this.slowmo = 0.5;
+      playVoice(this, 'scrappy_s1', 1.1);
+
+      const faceX = () => loser.x;
+      const faceY = () => loser.y - loser.cfg.height * 0.78;
+      const punch = (finalHit) => {
+        winner.attack = Object.assign({ key: 'punch' }, MOVES.punch);
+        winner.attackHitDone = true;
+        winner.setState('attack');
+        winner.flashUntil = this.now + 90;
+        if (!finalHit) {
+          SFX.hit();
+          this.cameras.main.shake(180, 0.012);
+          this.sparkAt(faceX(), faceY(), 0xffd060, 10);
+          this.impactSprayAt(faceX(), faceY(), facing, false);
+          loser.flashUntil = this.now + 100;
+          this.hitPause(85);
+          this.tweens.add({ targets: loser, x: Phaser.Math.Clamp(loser.x + facing * 7, 30, GAME_W - 30), duration: 130, yoyo: true, ease: 'Power2' });
+        }
+      };
+
+      punch(false);
+      this.time.delayedCall(430, () => punch(false));
+      this.time.delayedCall(900, () => {
+        punch(true);
+        const textureKey = loser.cfg.id;
+        const source = this.textures.get(textureKey).getSourceImage();
+        const cutY = Math.floor(source.height * 0.28);
+        const flip = loser.facing === -1;
+        const body = this.add.image(loser.x, loser.y, textureKey).setOrigin(0.5, 1).setScale(loser.baseScale).setFlipX(flip).setDepth(6);
+        body.setCrop(0, cutY, source.width, source.height - cutY);
+        loser.sprite.setVisible(false);
+        loser.setState('ko');
+
+        const fragmentCols = 3;
+        const fragmentRows = 2;
+        const pieceW = Math.ceil(source.width / fragmentCols);
+        const pieceH = Math.ceil(cutY / fragmentRows);
+        for (let row = 0; row < fragmentRows; row++) {
+          for (let col = 0; col < fragmentCols; col++) {
+            const piece = this.add.image(loser.x, loser.y, textureKey).setOrigin(0.5, 1).setScale(loser.baseScale).setFlipX(flip).setDepth(8);
+            piece.setCrop(col * pieceW, row * pieceH, Math.min(pieceW, source.width - col * pieceW), Math.min(pieceH, cutY - row * pieceH));
+            const burstX = facing * Phaser.Math.Between(55, 155) + Phaser.Math.Between(-95, 95);
+            this.tweens.add({
+              targets: piece,
+              x: Phaser.Math.Clamp(loser.x + burstX, 18, GAME_W - 18),
+              y: loser.y - Phaser.Math.Between(115, 255),
+              angle: Phaser.Math.Between(-760, 760),
+              alpha: 0,
+              delay: Phaser.Math.Between(0, 100),
+              duration: Phaser.Math.Between(1150, 1650),
+              ease: 'Cubic.easeOut',
+              onComplete: () => piece.destroy()
+            });
+          }
+        }
+
+        SFX.heavyHit();
+        this.cameras.main.flash(170, 255, 215, 155, false);
+        this.cameras.main.shake(620, 0.043);
+        this.sparkAt(faceX(), faceY(), 0xffbb33, 28);
+        this.impactSprayAt(faceX(), faceY(), facing, true);
+        this.impactSprayAt(faceX(), faceY() - 8, facing, true);
+        this.time.delayedCall(120, () => this.impactSprayAt(faceX() + facing * 14, faceY() - 12, facing, true));
+        this.hitPause(230);
+
+        this.time.delayedCall(260, () => {
+          this.tweens.add({ targets: body, angle: -facing * 84, y: body.y + 10, duration: 700, ease: 'Bounce.easeOut' });
+        });
+        this.time.delayedCall(820, () => {
+          winner.attack = null;
+          winner.setState('win');
+          playVoice(this, 'scrappy_win');
+        });
+        this.time.delayedCall(2050, () => {
           this.slowmo = 1;
           this.cameras.main.zoomTo(1, 320, 'Sine.easeInOut');
           this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
