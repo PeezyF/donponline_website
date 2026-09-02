@@ -899,24 +899,28 @@ class FightScene extends Phaser.Scene {
     curtain.setStrokeStyle(3, 0x8d0710, 0.85);
     this.tweens.add({ targets: curtain, alpha: 0.48, duration: 520, ease: 'Sine.easeOut' });
     this.centerText.setColor('#ff2b22').setFontSize(46).setScale(1.08);
-    this.bigText('END CAREER', 1450, 'DON P FINISHER');
-    this.tweens.add({ targets: this.centerText, scaleX: 1.3, scaleY: 1.3, duration: 240, yoyo: true, repeat: 2, ease: 'Sine.easeInOut' });
+    this.bigText('END CAREER', 1850, 'DON P FINISHER');
+    this.tweens.add({ targets: this.centerText, scaleX: 1.3, scaleY: 1.3, duration: 280, yoyo: true, repeat: 3, ease: 'Sine.easeInOut' });
     this.cameras.main.flash(260, 120, 0, 0, false);
+    this.cameras.main.zoomTo(1.035, 1450, 'Sine.easeInOut');
 
-    // Step Don P into finishing range while the title hangs on screen.
+    // Give the warning a beat on its own, then let Don P stalk into range.
     const finishX = Phaser.Math.Clamp(loser.x - facing * (winner.w + loser.w - 4), 44, GAME_W - 44);
-    this.tweens.add({ targets: winner, x: finishX, duration: 1120, ease: 'Sine.easeInOut' });
+    this.time.delayedCall(320, () => {
+      this.tweens.add({ targets: winner, x: finishX, duration: 1380, ease: 'Sine.easeInOut' });
+    });
 
     // Hold on the pose, then slow the world for the uppercut wind-up.
-    this.time.delayedCall(1350, () => {
-      this.slowmo = 0.35;
+    this.time.delayedCall(1900, () => {
+      this.slowmo = 0.3;
       winner.attack = Object.assign({ key: 'cpunch' }, MOVES.cpunch);
       winner.attackHitDone = true;
       winner.setState('attack');
       SFX.special();
-      this.cameras.main.zoomTo(1.07, 360, 'Sine.easeInOut');
+      this.cameras.main.shake(500, 0.003);
+      this.cameras.main.zoomTo(1.09, 500, 'Sine.easeInOut');
 
-      this.time.delayedCall(360, () => {
+      this.time.delayedCall(520, () => {
         const hitX = loser.x;
         const hitY = loser.y - loser.cfg.height * 0.7;
         SFX.heavyHit();
