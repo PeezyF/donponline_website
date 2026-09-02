@@ -916,6 +916,10 @@ class FightScene extends Phaser.Scene {
       this.startBoneCrusherFinisher(winner, loser);
       return;
     }
+    if (winner.roundsWon >= 2 && winner.cfg.id === 'pastortroy') {
+      this.startPastorTroyFinisher(winner, loser);
+      return;
+    }
     winner.setState('win');
     playVoice(this, winner.cfg.id + '_win');
     this.bigText(winner.cfg.name + ' WINS', 1200);
@@ -1281,6 +1285,102 @@ class FightScene extends Phaser.Scene {
         });
 
         this.time.delayedCall(2100, () => {
+          this.slowmo = 1;
+          this.cameras.main.zoomTo(1, 340, 'Sine.easeInOut');
+          this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
+          this.tweens.add({ targets: curtain, alpha: 0, duration: 300, onComplete: () => curtain.destroy() });
+          this.endMatch(winner, loser);
+        });
+      });
+    });
+  }
+
+  startPastorTroyFinisher(winner, loser) {
+    const facing = loser.x >= winner.x ? 1 : -1;
+    winner.facing = facing;
+    loser.facing = -facing;
+    winner.setState('idle');
+    loser.setState('hitstun');
+    loser.hitstun = 9999;
+    stopMusic(this);
+
+    const curtain = this.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, 0x080200, 0).setDepth(5);
+    curtain.setStrokeStyle(4, 0xd54a12, 0.92);
+    this.tweens.add({ targets: curtain, alpha: 0.5, duration: 560, ease: 'Sine.easeOut' });
+    this.centerText.setColor('#ff4b20').setFontSize(46).setScale(1.08);
+    this.bigText('END CAREER', 1800, 'PASTOR TROY · CONGREGATION KICK');
+    this.tweens.add({ targets: this.centerText, scaleX: 1.3, scaleY: 1.3, duration: 280, yoyo: true, repeat: 3, ease: 'Sine.easeInOut' });
+    this.cameras.main.flash(250, 130, 30, 0, false);
+    this.cameras.main.zoomTo(1.06, 1450, 'Sine.easeInOut');
+
+    const finishX = Phaser.Math.Clamp(loser.x - facing * (winner.w + loser.w - 16), 42, GAME_W - 42);
+    this.time.delayedCall(380, () => {
+      this.tweens.add({ targets: winner, x: finishX, duration: 1260, ease: 'Sine.easeInOut' });
+    });
+
+    // Let the announcement land, then hold the raised-leg silhouette before impact.
+    this.time.delayedCall(1850, () => {
+      this.slowmo = 0.34;
+      winner.attack = Object.assign({ key: 'kick' }, MOVES.kick);
+      winner.attackHitDone = true;
+      winner.setState('attack');
+      playVoice(this, 'pastortroy_s2', 1.12);
+      SFX.special();
+      this.cameras.main.shake(540, 0.006);
+      this.cameras.main.zoomTo(1.11, 520, 'Sine.easeInOut');
+
+      this.time.delayedCall(620, () => {
+        const victimImage = this.add.image(0, 0, loser.cfg.id)
+          .setOrigin(0.5, 1)
+          .setScale(loser.baseScale)
+          .setFlipX(loser.facing === -1);
+        const stomachY = -loser.cfg.height * 0.5;
+        const woundRim = this.add.ellipse(0, stomachY, 30, 21, 0x7f0710, 1).setStrokeStyle(3, 0xe12a18, 1);
+        const wound = this.add.ellipse(facing * 2, stomachY, 21, 15, 0x050000, 1).setStrokeStyle(2, 0x340005, 1);
+        const woundCuts = [
+          this.add.rectangle(-13, stomachY - 7, 9, 3, 0xb20d18).setAngle(-25),
+          this.add.rectangle(12, stomachY - 6, 8, 3, 0xd3311d).setAngle(28),
+          this.add.rectangle(-12, stomachY + 7, 7, 3, 0x7b0610).setAngle(20),
+          this.add.rectangle(11, stomachY + 7, 8, 3, 0xa70b14).setAngle(-24)
+        ];
+        const victim = this.add.container(loser.x, loser.y, [victimImage, woundRim, wound, ...woundCuts]).setDepth(7);
+        loser.sprite.setVisible(false);
+        loser.setState('ko');
+
+        const hitX = victim.x;
+        const hitY = victim.y + stomachY;
+        const kickStreak = this.add.rectangle(hitX - facing * 28, hitY, 74, 8, 0xffb52b, 0.9)
+          .setDepth(8).setAngle(facing * -4);
+        SFX.heavyHit();
+        this.cameras.main.flash(180, 255, 190, 90, false);
+        this.cameras.main.shake(720, 0.048);
+        this.sparkAt(hitX, hitY, 0xffc13b, 30);
+        this.impactSprayAt(hitX, hitY, facing, true);
+        this.impactSprayAt(hitX + facing * 5, hitY + 5, facing, true);
+        this.time.delayedCall(120, () => this.impactSprayAt(hitX + facing * 15, hitY, facing, true));
+        this.hitPause(250);
+        this.tweens.add({ targets: kickStreak, x: hitX + facing * 42, scaleX: 1.4, alpha: 0, duration: 260, ease: 'Quad.easeOut', onComplete: () => kickStreak.destroy() });
+        this.tweens.add({ targets: [woundRim, wound], scaleX: 1.35, scaleY: 1.35, duration: 150, yoyo: true, repeat: 1, ease: 'Back.easeOut' });
+
+        // The victim hangs on the boot for a beat, then folds and sails away.
+        this.time.delayedCall(280, () => {
+          this.tweens.add({
+            targets: victim,
+            x: Phaser.Math.Clamp(victim.x + facing * 145, 24, GAME_W - 24),
+            y: victim.y + 14,
+            angle: -facing * 78,
+            duration: 980,
+            ease: 'Cubic.easeOut'
+          });
+        });
+
+        this.time.delayedCall(880, () => {
+          winner.attack = null;
+          winner.setState('win');
+          playVoice(this, 'pastortroy_win');
+        });
+
+        this.time.delayedCall(2200, () => {
           this.slowmo = 1;
           this.cameras.main.zoomTo(1, 340, 'Sine.easeInOut');
           this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
