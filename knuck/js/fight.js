@@ -1787,16 +1787,16 @@ class FightScene extends Phaser.Scene {
           this.tweens.add({ targets: cracks, alpha: 1, duration: 120, ease: 'Stepped' });
 
           // Keep the body on the foreground glass, hold the impact, then drag it
-          // all the way to the bottom edge with visible streaks behind it.
+          // all the way down and completely past the bottom edge.
           victim.setDepth(31);
           const glassSmear = this.add.graphics().setDepth(29);
           this.time.delayedCall(650, () => {
             let previousY = victim.y;
             this.tweens.add({
               targets: victim,
-              y: GAME_H - 4,
-              angle: facing * 12,
-              duration: 2200,
+              y: GAME_H + victim.displayHeight + 24,
+              angle: facing * 15,
+              duration: 2700,
               ease: 'Sine.easeIn',
               onUpdate: () => {
                 const bodyCenterY = victim.y - victim.displayHeight * 0.48;
@@ -1808,14 +1808,6 @@ class FightScene extends Phaser.Scene {
               },
               onComplete: () => {
                 this.cameras.main.shake(220, 0.012);
-                this.tweens.add({
-                  targets: victim,
-                  y: GAME_H - 10,
-                  angle: facing * 15,
-                  duration: 180,
-                  yoyo: true,
-                  ease: 'Quad.easeOut'
-                });
               }
             });
           });
@@ -1826,7 +1818,7 @@ class FightScene extends Phaser.Scene {
             playVoice(this, 'djmontay_win');
           });
 
-          this.time.delayedCall(3650, () => {
+          this.time.delayedCall(4200, () => {
             this.slowmo = 1;
             this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
             this.tweens.add({ targets: curtain, alpha: 0, duration: 300, onComplete: () => curtain.destroy() });
