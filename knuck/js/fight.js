@@ -963,7 +963,7 @@ class FightScene extends Phaser.Scene {
     curtain.setStrokeStyle(3, 0x8d0710, 0.85);
     this.tweens.add({ targets: curtain, alpha: 0.48, duration: 520, ease: 'Sine.easeOut' });
     this.centerText.setColor('#ff2b22').setFontSize(46).setScale(1.08);
-    this.bigText('END CAREER', 1850, 'DON P FINISHER');
+    this.bigText('CAREER ENDER', 1850, 'DON P FINISHER');
     this.tweens.add({ targets: this.centerText, scaleX: 1.3, scaleY: 1.3, duration: 280, yoyo: true, repeat: 3, ease: 'Sine.easeInOut' });
     this.cameras.main.flash(260, 120, 0, 0, false);
     this.cameras.main.zoomTo(1.035, 1450, 'Sine.easeInOut');
@@ -1065,7 +1065,7 @@ class FightScene extends Phaser.Scene {
     curtain.setStrokeStyle(3, 0x168dcc, 0.9);
     this.tweens.add({ targets: curtain, alpha: 0.5, duration: 520, ease: 'Sine.easeOut' });
     this.centerText.setColor('#ff2b22').setFontSize(46).setScale(1.08);
-    this.bigText('END CAREER', 1700, 'LIL JON FINISHER');
+    this.bigText('CAREER ENDER', 1700, 'LIL JON FINISHER');
     this.tweens.add({ targets: this.centerText, scaleX: 1.28, scaleY: 1.28, duration: 270, yoyo: true, repeat: 3, ease: 'Sine.easeInOut' });
     this.cameras.main.flash(240, 80, 0, 0, false);
     this.cameras.main.zoomTo(1.055, 1400, 'Sine.easeInOut');
@@ -1147,7 +1147,7 @@ class FightScene extends Phaser.Scene {
     curtain.setStrokeStyle(3, 0xff6a22, 0.9);
     this.tweens.add({ targets: curtain, alpha: 0.46, duration: 480, ease: 'Sine.easeOut' });
     this.centerText.setColor('#ff3a24').setFontSize(46).setScale(1.08);
-    this.bigText('END CAREER', 1550, 'LIL SCRAPPY · HEAD BUSSA');
+    this.bigText('CAREER ENDER', 1550, 'LIL SCRAPPY · HEAD BUSSA');
     this.tweens.add({ targets: this.centerText, scaleX: 1.28, scaleY: 1.28, duration: 250, yoyo: true, repeat: 3, ease: 'Sine.easeInOut' });
     this.cameras.main.flash(220, 120, 15, 0, false);
     this.cameras.main.zoomTo(1.06, 1250, 'Sine.easeInOut');
@@ -1256,7 +1256,7 @@ class FightScene extends Phaser.Scene {
     curtain.setStrokeStyle(4, 0xc77824, 0.9);
     this.tweens.add({ targets: curtain, alpha: 0.5, duration: 560, ease: 'Sine.easeOut' });
     this.centerText.setColor('#ff9b32').setFontSize(46).setScale(1.08);
-    this.bigText('END CAREER', 1750, 'BONE CRUSHER · SEISMIC CRUSH');
+    this.bigText('CAREER ENDER', 1750, 'BONE CRUSHER · SEISMIC CRUSH');
     this.tweens.add({ targets: this.centerText, scaleX: 1.3, scaleY: 1.3, duration: 290, yoyo: true, repeat: 3, ease: 'Sine.easeInOut' });
     this.cameras.main.flash(260, 120, 70, 15, false);
     this.cameras.main.zoomTo(1.06, 1450, 'Sine.easeInOut');
@@ -1350,7 +1350,7 @@ class FightScene extends Phaser.Scene {
     curtain.setStrokeStyle(4, 0xd54a12, 0.92);
     this.tweens.add({ targets: curtain, alpha: 0.5, duration: 560, ease: 'Sine.easeOut' });
     this.centerText.setColor('#ff4b20').setFontSize(46).setScale(1.08);
-    this.bigText('END CAREER', 1800, 'PASTOR TROY · CONGREGATION KICK');
+    this.bigText('CAREER ENDER', 1800, 'PASTOR TROY · CONGREGATION KICK');
     this.tweens.add({ targets: this.centerText, scaleX: 1.3, scaleY: 1.3, duration: 280, yoyo: true, repeat: 3, ease: 'Sine.easeInOut' });
     this.cameras.main.flash(250, 130, 30, 0, false);
     this.cameras.main.zoomTo(1.06, 1450, 'Sine.easeInOut');
@@ -1446,7 +1446,7 @@ class FightScene extends Phaser.Scene {
     curtain.setStrokeStyle(4, 0xff6a18, 0.95);
     this.tweens.add({ targets: curtain, alpha: 0.5, duration: 560, ease: 'Sine.easeOut' });
     this.centerText.setColor('#ff6724').setFontSize(46).setScale(1.08);
-    this.bigText('END CAREER', 1800, 'PRINCESS · CROWN FIRE');
+    this.bigText('CAREER ENDER', 1800, 'PRINCESS · CROWN FIRE');
     this.tweens.add({ targets: this.centerText, scaleX: 1.3, scaleY: 1.3, duration: 280, yoyo: true, repeat: 3, ease: 'Sine.easeInOut' });
     this.cameras.main.flash(250, 140, 20, 50, false);
     this.cameras.main.zoomTo(1.055, 1400, 'Sine.easeInOut');
@@ -1586,7 +1586,7 @@ class FightScene extends Phaser.Scene {
     curtain.setStrokeStyle(4, 0xff3f9f, 0.95);
     this.tweens.add({ targets: curtain, alpha: 0.5, duration: 560, ease: 'Sine.easeOut' });
     this.centerText.setColor('#ff4fae').setFontSize(46).setScale(1.08);
-    this.bigText('END CAREER', 1800, 'DIAMOND · HEART OF ICE');
+    this.bigText('CAREER ENDER', 1800, 'DIAMOND · HEART OF ICE');
     this.tweens.add({ targets: this.centerText, scaleX: 1.3, scaleY: 1.3, duration: 280, yoyo: true, repeat: 3, ease: 'Sine.easeInOut' });
     this.cameras.main.flash(250, 145, 20, 85, false);
     this.cameras.main.zoomTo(1.06, 1400, 'Sine.easeInOut');
@@ -1696,7 +1696,7 @@ class FightScene extends Phaser.Scene {
     curtain.setStrokeStyle(4, 0x2f8dff, 0.95);
     this.tweens.add({ targets: curtain, alpha: 0.52, duration: 560, ease: 'Sine.easeOut' });
     this.centerText.setColor('#45a6ff').setFontSize(46).setScale(1.08);
-    this.bigText('END CAREER', 1800, 'DJ MONTAY · SCREEN DROP');
+    this.bigText('CAREER ENDER', 1800, 'DJ MONTAY · SCREEN DROP');
     this.tweens.add({ targets: this.centerText, scaleX: 1.3, scaleY: 1.3, duration: 280, yoyo: true, repeat: 3, ease: 'Sine.easeInOut' });
     this.cameras.main.flash(250, 20, 75, 150, false);
     this.cameras.main.zoomTo(1.055, 1400, 'Sine.easeInOut');
@@ -1839,7 +1839,7 @@ class FightScene extends Phaser.Scene {
     curtain.setStrokeStyle(4, 0xffd52a, 0.95);
     this.tweens.add({ targets: curtain, alpha: 0.5, duration: 560, ease: 'Sine.easeOut' });
     this.centerText.setColor('#ffe039').setFontSize(46).setScale(1.08);
-    this.bigText('END CAREER', 1800, 'DJ SCREAM · SCREAM TEAM SKY DROP');
+    this.bigText('CAREER ENDER', 1800, 'DJ SCREAM · SCREAM TEAM SKY DROP');
     this.tweens.add({ targets: this.centerText, scaleX: 1.3, scaleY: 1.3, duration: 280, yoyo: true, repeat: 3, ease: 'Sine.easeInOut' });
     this.cameras.main.flash(250, 120, 20, 130, false);
     this.cameras.main.zoomTo(1.06, 1400, 'Sine.easeInOut');
