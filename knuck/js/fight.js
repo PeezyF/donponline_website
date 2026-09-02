@@ -924,6 +924,10 @@ class FightScene extends Phaser.Scene {
       this.startPrincessFinisher(winner, loser);
       return;
     }
+    if (winner.roundsWon >= 2 && winner.cfg.id === 'diamond') {
+      this.startDiamondFinisher(winner, loser);
+      return;
+    }
     winner.setState('win');
     playVoice(this, winner.cfg.id + '_win');
     this.bigText(winner.cfg.name + ' WINS', 1200);
@@ -1530,6 +1534,116 @@ class FightScene extends Phaser.Scene {
               this.endMatch(winner, loser);
             });
           });
+        });
+      });
+    });
+  }
+
+  startDiamondFinisher(winner, loser) {
+    const facing = loser.x >= winner.x ? 1 : -1;
+    winner.facing = facing;
+    loser.facing = -facing;
+    winner.setState('idle');
+    loser.setState('hitstun');
+    loser.hitstun = 9999;
+    stopMusic(this);
+
+    const curtain = this.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, 0x080106, 0).setDepth(5);
+    curtain.setStrokeStyle(4, 0xff3f9f, 0.95);
+    this.tweens.add({ targets: curtain, alpha: 0.5, duration: 560, ease: 'Sine.easeOut' });
+    this.centerText.setColor('#ff4fae').setFontSize(46).setScale(1.08);
+    this.bigText('END CAREER', 1800, 'DIAMOND · HEART OF ICE');
+    this.tweens.add({ targets: this.centerText, scaleX: 1.3, scaleY: 1.3, duration: 280, yoyo: true, repeat: 3, ease: 'Sine.easeInOut' });
+    this.cameras.main.flash(250, 145, 20, 85, false);
+    this.cameras.main.zoomTo(1.06, 1400, 'Sine.easeInOut');
+
+    const finishX = Phaser.Math.Clamp(loser.x - facing * (winner.w * 0.52 + loser.w * 0.35), 42, GAME_W - 42);
+    this.time.delayedCall(360, () => {
+      this.tweens.add({ targets: winner, x: finishX, duration: 1300, ease: 'Sine.easeInOut' });
+    });
+
+    this.time.delayedCall(1850, () => {
+      this.slowmo = 0.34;
+      winner.special = winner.cfg.special1;
+      winner.specialSlot = 1;
+      winner.specialDone = true;
+      winner.setState('special');
+      playVoice(this, 'diamond_s1', 1.12);
+      SFX.special();
+      this.cameras.main.shake(560, 0.007);
+      this.cameras.main.zoomTo(1.115, 520, 'Sine.easeInOut');
+
+      this.time.delayedCall(620, () => {
+        const body = this.add.image(loser.x, loser.y, loser.cfg.id)
+          .setOrigin(0.5, 1)
+          .setScale(loser.baseScale)
+          .setFlipX(loser.facing === -1)
+          .setDepth(7);
+        loser.sprite.setVisible(false);
+        loser.setState('ko');
+
+        const chestX = loser.x;
+        const chestY = loser.y - loser.cfg.height * 0.67;
+        const chestWound = this.add.circle(chestX, chestY, 11, 0x080003, 1).setStrokeStyle(4, 0x8a061d, 1).setDepth(8);
+        const heartLeft = this.add.circle(-6, -3, 8, 0xb40726, 1).setStrokeStyle(2, 0xff345d, 1);
+        const heartRight = this.add.circle(6, -3, 8, 0xb40726, 1).setStrokeStyle(2, 0xff345d, 1);
+        const heartPoint = this.add.triangle(0, 3, -13, -3, 13, -3, 0, 17, 0xa90622, 1).setStrokeStyle(2, 0xff345d, 1);
+        const heartGlow = this.add.circle(0, 0, 16, 0xff174d, 0.16).setStrokeStyle(2, 0xff78a6, 0.65);
+        const heart = this.add.container(chestX, chestY, [heartGlow, heartPoint, heartLeft, heartRight]).setDepth(10).setScale(0.7);
+
+        SFX.heavyHit();
+        this.cameras.main.flash(180, 255, 195, 225, false);
+        this.cameras.main.shake(720, 0.044);
+        this.sparkAt(chestX, chestY, 0xff4d91, 28);
+        this.impactSprayAt(chestX, chestY, -facing, true);
+        this.hitPause(250);
+
+        const raisedX = winner.x + facing * 8;
+        const raisedY = winner.y - winner.cfg.height - 32;
+        this.time.delayedCall(220, () => {
+          this.tweens.add({
+            targets: heart,
+            x: raisedX,
+            y: raisedY,
+            scaleX: 1.08,
+            scaleY: 1.08,
+            duration: 920,
+            ease: 'Back.easeOut'
+          });
+          this.tweens.add({ targets: heart, angle: facing * 8, duration: 220, yoyo: true, repeat: 3, ease: 'Sine.easeInOut' });
+        });
+
+        for (let i = 0; i < 9; i++) {
+          this.time.delayedCall(160 + i * 105, () => {
+            const drop = this.add.circle(
+              Phaser.Math.Linear(chestX, raisedX, Math.min(1, i / 7)),
+              Phaser.Math.Linear(chestY, raisedY, Math.min(1, i / 7)),
+              Phaser.Math.Between(2, 4), i % 2 ? 0x7b0317 : 0xca092b, 0.95
+            ).setDepth(9);
+            this.tweens.add({ targets: drop, y: drop.y + Phaser.Math.Between(20, 48), alpha: 0, duration: 520, ease: 'Quad.easeIn', onComplete: () => drop.destroy() });
+          });
+        }
+
+        this.time.delayedCall(520, () => {
+          this.tweens.add({ targets: body, angle: -facing * 82, y: body.y + 12, duration: 820, ease: 'Bounce.easeOut' });
+          this.tweens.add({ targets: chestWound, x: chestWound.x - facing * 9, y: chestWound.y + loser.cfg.height * 0.3, angle: -facing * 82, duration: 820, ease: 'Bounce.easeOut' });
+        });
+
+        this.time.delayedCall(1180, () => {
+          winner.special = null;
+          winner.setState('win');
+          playVoice(this, 'diamond_win');
+          this.cameras.main.flash(130, 255, 60, 150, false);
+          this.tweens.add({ targets: heart, scaleX: 1.25, scaleY: 1.25, duration: 170, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+        });
+
+        // Leave both the defeated fighter and raised heart visible during the result screen.
+        this.time.delayedCall(2550, () => {
+          this.slowmo = 1;
+          this.cameras.main.zoomTo(1, 340, 'Sine.easeInOut');
+          this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
+          this.tweens.add({ targets: curtain, alpha: 0, duration: 300, onComplete: () => curtain.destroy() });
+          this.endMatch(winner, loser);
         });
       });
     });
