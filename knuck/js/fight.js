@@ -547,6 +547,10 @@ class FightScene extends Phaser.Scene {
     this.matchOver = false;
     this.timer = 99;
     this.timerAcc = 0;
+    this.coinRewardSettled = false;
+    if (this.mode !== 'training' && window.KNUCK_COINS) {
+      window.KNUCK_COINS.startMatch({ mode: this.mode });
+    }
     if (this.mode === 'training') { this.roundActive = true; this.bigText('TRAINING', 900); }
     else this.startRoundIntro();
 
@@ -1786,6 +1790,10 @@ class FightScene extends Phaser.Scene {
   endMatch(winner) {
     this.matchOver = true;
     stopMusic(this);
+    if (!this.coinRewardSettled && window.KNUCK_COINS) {
+      this.coinRewardSettled = true;
+      window.KNUCK_COINS.finishMatch(winner === this.p1);
+    }
     if (this.mode === 'tower') {
       const won = winner === this.p1;
       this.time.delayedCall(600, () => {
@@ -1816,7 +1824,16 @@ class FightScene extends Phaser.Scene {
     this.dtLast = dt;
 
     if (Phaser.Input.Keyboard.JustDown(this.escKey) || this.padStartPressed()) {
-      if (!this.matchOver) { this.matchOver = true; stopMusic(this); this.showEndPanel('PAUSED - MATCH ENDED'); return; }
+      if (!this.matchOver) {
+        this.matchOver = true;
+        stopMusic(this);
+        if (!this.coinRewardSettled && window.KNUCK_COINS) {
+          this.coinRewardSettled = true;
+          window.KNUCK_COINS.finishMatch(false);
+        }
+        this.showEndPanel('PAUSED - MATCH ENDED');
+        return;
+      }
     }
     if (this.mode === 'training' && Phaser.Input.Keyboard.JustDown(this.tKey)) {
       this.dummyBlocks = !this.dummyBlocks;
