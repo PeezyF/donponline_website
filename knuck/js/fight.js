@@ -872,12 +872,71 @@ class FightScene extends Phaser.Scene {
   }
 
   afterRound(winner, loser) {
+    if (winner.roundsWon >= 2 && winner.cfg.id === 'donp') {
+      this.startDonPFinisher(winner, loser);
+      return;
+    }
     winner.setState('win');
     playVoice(this, winner.cfg.id + '_win');
     this.bigText(winner.cfg.name + ' WINS', 1200);
     this.time.delayedCall(1700, () => {
       if (winner.roundsWon >= 2) this.endMatch(winner, loser);
       else { this.roundNum++; this.startRoundIntro(); }
+    });
+  }
+
+  startDonPFinisher(winner, loser) {
+    const facing = loser.x >= winner.x ? 1 : -1;
+    winner.facing = facing;
+    loser.facing = -facing;
+    winner.setState('idle');
+    loser.setState('hitstun');
+    loser.hitstun = 9999;
+
+    this.centerText.setColor('#ff2b22').setScale(1.15);
+    this.bigText('END CAREER', 900, 'DON P FINISHER');
+    this.cameras.main.flash(180, 150, 0, 0, false);
+
+    // Step Don P into finishing range while the title hangs on screen.
+    const finishX = Phaser.Math.Clamp(loser.x - facing * (winner.w + loser.w - 4), 44, GAME_W - 44);
+    this.tweens.add({ targets: winner, x: finishX, duration: 620, ease: 'Power2' });
+
+    this.time.delayedCall(900, () => {
+      winner.attack = Object.assign({ key: 'cpunch' }, MOVES.cpunch);
+      winner.attackHitDone = true;
+      winner.setState('attack');
+      SFX.special();
+
+      this.time.delayedCall(145, () => {
+        const hitX = loser.x;
+        const hitY = loser.y - loser.cfg.height * 0.7;
+        SFX.heavyHit();
+        this.cameras.main.shake(320, 0.022);
+        this.cameras.main.flash(90, 255, 225, 150, false);
+        this.sparkAt(hitX, hitY, 0xffe066, 16);
+        this.impactSprayAt(hitX, hitY, facing, true);
+        this.impactSprayAt(hitX, hitY - 8, facing, true);
+
+        loser.setState('launched');
+        loser.airborne = true;
+        loser.vx = facing * 260;
+        loser.vy = -1250;
+        loser.flashUntil = this.now + 130;
+        winner.flashUntil = this.now + 100;
+        this.hitPause(120);
+
+        this.time.delayedCall(380, () => {
+          winner.attack = null;
+          winner.setState('win');
+          playVoice(this, 'donp_win');
+        });
+
+        // The opponent remains above the frame as the normal match result begins.
+        this.time.delayedCall(1300, () => {
+          this.centerText.setColor('#ffcc22').setScale(1);
+          this.endMatch(winner, loser);
+        });
+      });
     });
   }
 
