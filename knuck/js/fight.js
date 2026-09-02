@@ -1787,17 +1787,17 @@ class FightScene extends Phaser.Scene {
           this.tweens.add({ targets: cracks, alpha: 1, duration: 120, ease: 'Stepped' });
 
           // Keep the body on the foreground glass, hold the impact, then drag it
-          // slowly down the screen with visible streaks behind it.
+          // all the way to the bottom edge with visible streaks behind it.
           victim.setDepth(31);
           const glassSmear = this.add.graphics().setDepth(29);
           this.time.delayedCall(650, () => {
             let previousY = victim.y;
             this.tweens.add({
               targets: victim,
-              y: GAME_H + loser.cfg.height * 1.4,
-              angle: facing * 9,
-              duration: 1650,
-              ease: 'Sine.easeInOut',
+              y: GAME_H - 4,
+              angle: facing * 12,
+              duration: 2200,
+              ease: 'Sine.easeIn',
               onUpdate: () => {
                 const bodyCenterY = victim.y - victim.displayHeight * 0.48;
                 const oldCenterY = previousY - victim.displayHeight * 0.48;
@@ -1805,6 +1805,17 @@ class FightScene extends Phaser.Scene {
                 glassSmear.lineStyle(7, 0x9fcbe4, 0.055).lineBetween(victim.x + 24, oldCenterY, victim.x + 24, bodyCenterY);
                 glassSmear.lineStyle(2, 0xffffff, 0.16).lineBetween(victim.x + 4, oldCenterY, victim.x + 4, bodyCenterY);
                 previousY = victim.y;
+              },
+              onComplete: () => {
+                this.cameras.main.shake(220, 0.012);
+                this.tweens.add({
+                  targets: victim,
+                  y: GAME_H - 10,
+                  angle: facing * 15,
+                  duration: 180,
+                  yoyo: true,
+                  ease: 'Quad.easeOut'
+                });
               }
             });
           });
@@ -1815,7 +1826,7 @@ class FightScene extends Phaser.Scene {
             playVoice(this, 'djmontay_win');
           });
 
-          this.time.delayedCall(3000, () => {
+          this.time.delayedCall(3650, () => {
             this.slowmo = 1;
             this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
             this.tweens.add({ targets: curtain, alpha: 0, duration: 300, onComplete: () => curtain.destroy() });
