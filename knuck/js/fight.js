@@ -260,6 +260,7 @@ class Fighter {
         dmg >= 10 ? SFX.heavyHit() : SFX.hit();
         this.flashUntil = S.now + 80;
         S.sparkAt(this.x, this.y - this.cfg.height * 0.5, 0xffdd44, 8);
+        S.impactSprayAt(this.x, this.y - this.cfg.height * 0.62, Math.sign(kbvx) || from.facing, dmg >= 10);
         S.hitPause(60);
         if (S.mode === 'training') S.floatDamage(this.x, this.y - this.cfg.height, Math.round(dmg));
         if (this.health <= 0) { this.health = 0; S.onKO(this, from); }
@@ -278,6 +279,12 @@ class Fighter {
       dmg >= 12 ? SFX.heavyHit() : SFX.hit();
       this.flashUntil = S.now + 80;
       S.sparkAt(this.x, this.y - this.cfg.height * 0.65, 0xffdd44, 8);
+      S.impactSprayAt(
+        this.x,
+        this.y - this.cfg.height * 0.68,
+        Math.sign(kbvx) || from.facing,
+        dmg >= 12 || opts.launch || opts.sweep || opts.knockdown || opts.unblockable
+      );
       S.hitPause(dmg >= 12 ? 90 : 45);
       if (S.mode === 'training') S.floatDamage(this.x, this.y - this.cfg.height, Math.round(dmg));
     }
@@ -694,6 +701,42 @@ class FightScene extends Phaser.Scene {
       const r = this.add.rectangle(x, y, 4, 4, color).setDepth(6);
       const a = Math.random() * Math.PI * 2, sp = 60 + Math.random() * 120;
       this.tweens.add({ targets: r, x: x + Math.cos(a) * sp * 0.4, y: y + Math.sin(a) * sp * 0.4, alpha: 0, duration: 260, onComplete: () => r.destroy() });
+    }
+  }
+  // Early-arcade impact spray: sweat on every clean hit, with a restrained
+  // pixel-blood accent that gets slightly larger on launchers and heavy blows.
+  impactSprayAt(x, y, dir, heavy) {
+    const sprayPixel = (color, size, dx, rise, fall, delay) => {
+      const drop = this.add.rectangle(x, y, size, Math.max(2, size - 1), color).setDepth(8).setAngle(Phaser.Math.Between(-35, 35));
+      this.tweens.add({
+        targets: drop,
+        x: x + dx * 0.58,
+        y: y - rise,
+        duration: 120 + delay,
+        ease: 'Quad.easeOut',
+        onComplete: () => this.tweens.add({
+          targets: drop,
+          x: x + dx,
+          y: y + fall,
+          alpha: 0,
+          angle: drop.angle + Phaser.Math.Between(-80, 80),
+          duration: 190 + delay,
+          ease: 'Quad.easeIn',
+          onComplete: () => drop.destroy()
+        })
+      });
+    };
+
+    const sweatCount = heavy ? 7 : 5;
+    for (let i = 0; i < sweatCount; i++) {
+      const spread = dir * Phaser.Math.Between(30, 88) + Phaser.Math.Between(-15, 15);
+      sprayPixel(i % 2 ? 0x7fddff : 0xe8fbff, Phaser.Math.Between(2, 4), spread, Phaser.Math.Between(22, 58), Phaser.Math.Between(10, 30), Phaser.Math.Between(0, 55));
+    }
+
+    const bloodCount = heavy ? 6 : 3;
+    for (let i = 0; i < bloodCount; i++) {
+      const spread = dir * Phaser.Math.Between(24, heavy ? 78 : 54) + Phaser.Math.Between(-10, 10);
+      sprayPixel(i % 3 ? 0xb20d1d : 0x650611, Phaser.Math.Between(2, heavy ? 5 : 3), spread, Phaser.Math.Between(16, 46), Phaser.Math.Between(16, 38), Phaser.Math.Between(15, 70));
     }
   }
   trailAt(x, y, color) {
