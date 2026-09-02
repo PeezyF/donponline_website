@@ -928,6 +928,10 @@ class FightScene extends Phaser.Scene {
       this.startDiamondFinisher(winner, loser);
       return;
     }
+    if (winner.roundsWon >= 2 && winner.cfg.id === 'djmontay') {
+      this.startDjMontayFinisher(winner, loser);
+      return;
+    }
     winner.setState('win');
     playVoice(this, winner.cfg.id + '_win');
     this.bigText(winner.cfg.name + ' WINS', 1200);
@@ -1644,6 +1648,136 @@ class FightScene extends Phaser.Scene {
           this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
           this.tweens.add({ targets: curtain, alpha: 0, duration: 300, onComplete: () => curtain.destroy() });
           this.endMatch(winner, loser);
+        });
+      });
+    });
+  }
+
+  startDjMontayFinisher(winner, loser) {
+    const facing = loser.x >= winner.x ? 1 : -1;
+    winner.facing = facing;
+    loser.facing = -facing;
+    winner.setState('idle');
+    loser.setState('hitstun');
+    loser.hitstun = 9999;
+    stopMusic(this);
+
+    const curtain = this.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, 0x01040a, 0).setDepth(5);
+    curtain.setStrokeStyle(4, 0x2f8dff, 0.95);
+    this.tweens.add({ targets: curtain, alpha: 0.52, duration: 560, ease: 'Sine.easeOut' });
+    this.centerText.setColor('#45a6ff').setFontSize(46).setScale(1.08);
+    this.bigText('END CAREER', 1800, 'DJ MONTAY · SCREEN DROP');
+    this.tweens.add({ targets: this.centerText, scaleX: 1.3, scaleY: 1.3, duration: 280, yoyo: true, repeat: 3, ease: 'Sine.easeInOut' });
+    this.cameras.main.flash(250, 20, 75, 150, false);
+    this.cameras.main.zoomTo(1.055, 1400, 'Sine.easeInOut');
+
+    const finishX = Phaser.Math.Clamp(loser.x - facing * (winner.w * 0.45 + loser.w * 0.32), 45, GAME_W - 45);
+    this.time.delayedCall(360, () => {
+      this.tweens.add({ targets: winner, x: finishX, duration: 1250, ease: 'Sine.easeInOut' });
+    });
+
+    this.time.delayedCall(1800, () => {
+      this.slowmo = 0.38;
+      winner.special = winner.cfg.special2;
+      winner.specialSlot = 2;
+      winner.specialDone = true;
+      winner.setState('special');
+      playVoice(this, 'djmontay_s2', 1.12);
+      SFX.special();
+
+      const victim = this.add.image(loser.x, loser.y, loser.cfg.id)
+        .setOrigin(0.5, 1)
+        .setScale(loser.baseScale)
+        .setFlipX(loser.facing === -1)
+        .setDepth(8);
+      loser.sprite.setVisible(false);
+      loser.setState('ko');
+
+      const holdX = winner.x;
+      const holdY = winner.y - winner.cfg.height - 26;
+      this.tweens.add({ targets: victim, x: holdX, y: holdY, angle: facing * 6, duration: 650, ease: 'Back.easeOut' });
+      this.cameras.main.shake(620, 0.009);
+      this.time.delayedCall(380, () => {
+        this.sparkAt(holdX, holdY + loser.cfg.height * 0.45, 0x5cb6ff, 14);
+      });
+
+      this.time.delayedCall(900, () => {
+        const impactX = GAME_W / 2;
+        const impactY = GAME_H * 0.73;
+        this.cameras.main.zoomTo(1, 210, 'Cubic.easeIn');
+        this.tweens.add({
+          targets: victim,
+          x: impactX,
+          y: impactY,
+          scaleX: loser.baseScale * 2.35,
+          scaleY: loser.baseScale * 2.35,
+          angle: -facing * 4,
+          duration: 430,
+          ease: 'Cubic.easeIn'
+        });
+
+        this.time.delayedCall(430, () => {
+          SFX.heavyHit();
+          this.cameras.main.flash(220, 225, 245, 255, false);
+          this.cameras.main.shake(900, 0.058);
+          this.sparkAt(impactX, GAME_H * 0.45, 0xd8f2ff, 42);
+          this.hitPause(280);
+
+          // Draw the impact cracks over the whole arena and keep them through the result screen.
+          const cracks = this.add.graphics().setDepth(30);
+          const crackX = impactX;
+          const crackY = GAME_H * 0.43;
+          cracks.lineStyle(3, 0xe9f8ff, 0.94);
+          for (let ray = 0; ray < 13; ray++) {
+            const angle = (Math.PI * 2 * ray / 13) + (ray % 2 ? 0.08 : -0.05);
+            const midR = 38 + (ray % 3) * 9;
+            const endR = 92 + (ray % 4) * 24;
+            const midX = crackX + Math.cos(angle) * midR;
+            const midY = crackY + Math.sin(angle) * midR;
+            const endX = crackX + Math.cos(angle + (ray % 2 ? 0.13 : -0.12)) * endR;
+            const endY = crackY + Math.sin(angle + (ray % 2 ? 0.13 : -0.12)) * endR;
+            cracks.beginPath();
+            cracks.moveTo(crackX, crackY);
+            cracks.lineTo(midX, midY);
+            cracks.lineTo(endX, endY);
+            cracks.strokePath();
+            if (ray % 2 === 0) {
+              cracks.lineStyle(2, 0x83b7d4, 0.8);
+              cracks.beginPath();
+              cracks.moveTo(midX, midY);
+              cracks.lineTo(midX + Math.cos(angle + 0.72) * 34, midY + Math.sin(angle + 0.72) * 34);
+              cracks.strokePath();
+              cracks.lineStyle(3, 0xe9f8ff, 0.94);
+            }
+          }
+          cracks.lineStyle(2, 0xffffff, 0.8);
+          cracks.strokeCircle(crackX, crackY, 21);
+          cracks.strokeCircle(crackX, crackY, 34);
+          cracks.setAlpha(0);
+          this.tweens.add({ targets: cracks, alpha: 1, duration: 120, ease: 'Stepped' });
+
+          this.time.delayedCall(420, () => {
+            this.tweens.add({
+              targets: victim,
+              y: GAME_H + loser.cfg.height * loser.baseScale * 2.2,
+              angle: facing * 7,
+              duration: 1350,
+              ease: 'Sine.easeIn'
+            });
+          });
+
+          this.time.delayedCall(780, () => {
+            winner.special = null;
+            winner.setState('win');
+            playVoice(this, 'djmontay_win');
+          });
+
+          this.time.delayedCall(2350, () => {
+            this.slowmo = 1;
+            this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
+            this.tweens.add({ targets: curtain, alpha: 0, duration: 300, onComplete: () => curtain.destroy() });
+            this.endMatch(winner, loser);
+          });
         });
       });
     });
