@@ -892,48 +892,70 @@ class FightScene extends Phaser.Scene {
     winner.setState('idle');
     loser.setState('hitstun');
     loser.hitstun = 9999;
+    stopMusic(this);
 
-    this.centerText.setColor('#ff2b22').setScale(1.15);
-    this.bigText('END CAREER', 900, 'DON P FINISHER');
-    this.cameras.main.flash(180, 150, 0, 0, false);
+    // Pull the energy out of the arena so the announcement and wind-up can breathe.
+    const curtain = this.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, 0x020207, 0).setDepth(9);
+    curtain.setStrokeStyle(3, 0x8d0710, 0.85);
+    this.tweens.add({ targets: curtain, alpha: 0.48, duration: 520, ease: 'Sine.easeOut' });
+    this.centerText.setColor('#ff2b22').setFontSize(46).setScale(1.08);
+    this.bigText('END CAREER', 1450, 'DON P FINISHER');
+    this.tweens.add({ targets: this.centerText, scaleX: 1.3, scaleY: 1.3, duration: 240, yoyo: true, repeat: 2, ease: 'Sine.easeInOut' });
+    this.cameras.main.flash(260, 120, 0, 0, false);
 
     // Step Don P into finishing range while the title hangs on screen.
     const finishX = Phaser.Math.Clamp(loser.x - facing * (winner.w + loser.w - 4), 44, GAME_W - 44);
-    this.tweens.add({ targets: winner, x: finishX, duration: 620, ease: 'Power2' });
+    this.tweens.add({ targets: winner, x: finishX, duration: 1120, ease: 'Sine.easeInOut' });
 
-    this.time.delayedCall(900, () => {
+    // Hold on the pose, then slow the world for the uppercut wind-up.
+    this.time.delayedCall(1350, () => {
+      this.slowmo = 0.35;
       winner.attack = Object.assign({ key: 'cpunch' }, MOVES.cpunch);
       winner.attackHitDone = true;
       winner.setState('attack');
       SFX.special();
+      this.cameras.main.zoomTo(1.07, 360, 'Sine.easeInOut');
 
-      this.time.delayedCall(145, () => {
+      this.time.delayedCall(360, () => {
         const hitX = loser.x;
         const hitY = loser.y - loser.cfg.height * 0.7;
         SFX.heavyHit();
-        this.cameras.main.shake(320, 0.022);
-        this.cameras.main.flash(90, 255, 225, 150, false);
-        this.sparkAt(hitX, hitY, 0xffe066, 16);
+        this.cameras.main.shake(520, 0.035);
+        this.cameras.main.flash(150, 255, 225, 150, false);
+        this.sparkAt(hitX, hitY, 0xffe066, 24);
         this.impactSprayAt(hitX, hitY, facing, true);
         this.impactSprayAt(hitX, hitY - 8, facing, true);
+        this.time.delayedCall(110, () => this.impactSprayAt(hitX + facing * 12, hitY - 16, facing, true));
 
         loser.setState('launched');
-        loser.airborne = true;
-        loser.vx = facing * 260;
-        loser.vy = -1250;
-        loser.flashUntil = this.now + 130;
-        winner.flashUntil = this.now + 100;
-        this.hitPause(120);
+        loser.airborne = false;
+        loser.vx = 0;
+        loser.vy = 0;
+        loser.flashUntil = this.now + 180;
+        winner.flashUntil = this.now + 150;
+        this.hitPause(190);
 
-        this.time.delayedCall(380, () => {
+        // A long, readable flight carries the defeated fighter beyond the camera.
+        this.tweens.add({
+          targets: loser,
+          x: Phaser.Math.Clamp(loser.x + facing * 135, 30, GAME_W - 30),
+          y: -220,
+          duration: 1600,
+          ease: 'Cubic.easeOut'
+        });
+
+        this.time.delayedCall(680, () => {
           winner.attack = null;
           winner.setState('win');
           playVoice(this, 'donp_win');
         });
 
-        // The opponent remains above the frame as the normal match result begins.
-        this.time.delayedCall(1300, () => {
-          this.centerText.setColor('#ffcc22').setScale(1);
+        // Let the launch hang for a full beat before returning to the match result.
+        this.time.delayedCall(1750, () => {
+          this.slowmo = 1;
+          this.cameras.main.zoomTo(1, 320, 'Sine.easeInOut');
+          this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
+          this.tweens.add({ targets: curtain, alpha: 0, duration: 280, onComplete: () => curtain.destroy() });
           this.endMatch(winner, loser);
         });
       });
