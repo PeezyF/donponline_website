@@ -1029,19 +1029,77 @@ class FightScene extends Phaser.Scene {
                 this.cameras.main.shake(460, 0.027);
                 this.sparkAt(body.x, groundY - 6, 0x9b8062, 18);
                 this.boneDustAt(body.x, groundY - 4, 18, -facing);
+
+                const stompX = Phaser.Math.Clamp(body.x - facing * 34, 38, GAME_W - 38);
+                this.tweens.add({ targets: winner, x: stompX, duration: 430, ease: 'Sine.easeInOut' });
+                this.time.delayedCall(460, () => {
+                  winner.attack = Object.assign({ key: 'ckick' }, MOVES.ckick);
+                  winner.attackHitDone = true;
+                  winner.setState('attack');
+                  this.cameras.main.zoomTo(1.13, 260, 'Sine.easeInOut');
+                });
+
+                this.time.delayedCall(790, () => {
+                  const stompY = groundY - 8;
+                  const textureKey = loser.cfg.id;
+                  const source = this.textures.get(textureKey).getSourceImage();
+                  body.destroy();
+                  SFX.ko();
+                  SFX.heavyHit();
+                  this.cameras.main.flash(220, 255, 215, 170, false);
+                  this.cameras.main.shake(1050, 0.07);
+                  this.shockRing(stompX + facing * 24, stompY, 0xff3322);
+                  this.sparkAt(stompX + facing * 24, stompY, 0xffc52a, 48);
+                  this.impactSprayAt(stompX + facing * 24, stompY - 15, facing, true);
+                  this.impactSprayAt(stompX + facing * 24, stompY - 30, -facing, true);
+                  this.time.delayedCall(100, () => this.impactSprayAt(stompX, stompY - 22, facing, true));
+                  this.hitPause(320);
+
+                  this.add.ellipse(stompX + facing * 24, groundY - 2, Math.max(70, loser.w * 1.35), 18, 0x700711, 0.92)
+                    .setStrokeStyle(3, 0x240004, 0.95).setDepth(7);
+
+                  const cols = 3;
+                  const rows = 3;
+                  const pieceW = Math.ceil(source.width / cols);
+                  const pieceH = Math.ceil(source.height / rows);
+                  for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < cols; col++) {
+                      const piece = this.add.image(stompX + facing * 24, groundY, textureKey)
+                        .setOrigin(0.5, 1)
+                        .setScale(loser.baseScale)
+                        .setFlipX(loser.facing === -1)
+                        .setDepth(8);
+                      piece.setCrop(
+                        col * pieceW,
+                        row * pieceH,
+                        Math.min(pieceW, source.width - col * pieceW),
+                        Math.min(pieceH, source.height - row * pieceH)
+                      );
+                      this.tweens.add({
+                        targets: piece,
+                        x: Phaser.Math.Clamp(piece.x + Phaser.Math.Between(-135, 135), 16, GAME_W - 16),
+                        y: groundY - Phaser.Math.Between(45, 175),
+                        angle: Phaser.Math.Between(-620, 620),
+                        duration: Phaser.Math.Between(650, 1050),
+                        ease: 'Cubic.easeOut',
+                        onComplete: () => this.tweens.add({ targets: piece, y: groundY + 5, alpha: 0.5, duration: 480, ease: 'Quad.easeIn' })
+                      });
+                    }
+                  }
+
+                  this.time.delayedCall(420, () => {
+                    winner.attack = null;
+                    winner.setState('win');
+                    playVoice(this, 'donp_win');
+                  });
+                });
               }
             });
           }
         });
 
-        this.time.delayedCall(680, () => {
-          winner.attack = null;
-          winner.setState('win');
-          playVoice(this, 'donp_win');
-        });
-
-        // Hold on the landed body before returning to the match result.
-        this.time.delayedCall(3000, () => {
+        // Hold on the stomp aftermath before returning to the match result.
+        this.time.delayedCall(4800, () => {
           this.slowmo = 1;
           this.cameras.main.zoomTo(1, 320, 'Sine.easeInOut');
           this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
