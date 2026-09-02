@@ -991,21 +991,43 @@ class FightScene extends Phaser.Scene {
         this.impactSprayAt(hitX, hitY - 8, facing, true);
         this.time.delayedCall(110, () => this.impactSprayAt(hitX + facing * 12, hitY - 16, facing, true));
 
-        loser.setState('launched');
-        loser.airborne = false;
-        loser.vx = 0;
-        loser.vy = 0;
-        loser.flashUntil = this.now + 180;
+        const groundY = loser.y;
+        const flightX = Phaser.Math.Clamp(loser.x + facing * 135, 30, GAME_W - 30);
+        const body = this.add.image(loser.x, groundY, loser.cfg.id)
+          .setOrigin(0.5, 1)
+          .setScale(loser.baseScale)
+          .setFlipX(loser.facing === -1)
+          .setDepth(7);
+        loser.sprite.setVisible(false);
+        loser.setState('ko');
         winner.flashUntil = this.now + 150;
         this.hitPause(190);
 
-        // A long, readable flight carries the defeated fighter beyond the camera.
+        // Launch the defeated fighter beyond the camera, then bring the body
+        // back down for a heavy landing that remains visible.
         this.tweens.add({
-          targets: loser,
-          x: Phaser.Math.Clamp(loser.x + facing * 135, 30, GAME_W - 30),
-          y: -220,
-          duration: 1600,
-          ease: 'Cubic.easeOut'
+          targets: body,
+          x: flightX,
+          y: -210,
+          angle: facing * 110,
+          duration: 1350,
+          ease: 'Cubic.easeOut',
+          onComplete: () => {
+            this.tweens.add({
+              targets: body,
+              x: Phaser.Math.Clamp(flightX + facing * 38, 42, GAME_W - 42),
+              y: groundY + 7,
+              angle: -facing * 88,
+              duration: 1050,
+              ease: 'Cubic.easeIn',
+              onComplete: () => {
+                SFX.heavyHit();
+                this.cameras.main.shake(460, 0.027);
+                this.sparkAt(body.x, groundY - 6, 0x9b8062, 18);
+                this.boneDustAt(body.x, groundY - 4, 18, -facing);
+              }
+            });
+          }
         });
 
         this.time.delayedCall(680, () => {
@@ -1014,8 +1036,8 @@ class FightScene extends Phaser.Scene {
           playVoice(this, 'donp_win');
         });
 
-        // Let the launch hang for a full beat before returning to the match result.
-        this.time.delayedCall(1750, () => {
+        // Hold on the landed body before returning to the match result.
+        this.time.delayedCall(3000, () => {
           this.slowmo = 1;
           this.cameras.main.zoomTo(1, 320, 'Sine.easeInOut');
           this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
