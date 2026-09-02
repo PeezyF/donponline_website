@@ -920,6 +920,10 @@ class FightScene extends Phaser.Scene {
       this.startPastorTroyFinisher(winner, loser);
       return;
     }
+    if (winner.roundsWon >= 2 && winner.cfg.id === 'princess') {
+      this.startPrincessFinisher(winner, loser);
+      return;
+    }
     winner.setState('win');
     playVoice(this, winner.cfg.id + '_win');
     this.bigText(winner.cfg.name + ' WINS', 1200);
@@ -1386,6 +1390,146 @@ class FightScene extends Phaser.Scene {
           this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
           this.tweens.add({ targets: curtain, alpha: 0, duration: 300, onComplete: () => curtain.destroy() });
           this.endMatch(winner, loser);
+        });
+      });
+    });
+  }
+
+  startPrincessFinisher(winner, loser) {
+    const facing = loser.x >= winner.x ? 1 : -1;
+    winner.facing = facing;
+    loser.facing = -facing;
+    winner.setState('idle');
+    loser.setState('hitstun');
+    loser.hitstun = 9999;
+    stopMusic(this);
+
+    const curtain = this.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, 0x090104, 0).setDepth(5);
+    curtain.setStrokeStyle(4, 0xff6a18, 0.95);
+    this.tweens.add({ targets: curtain, alpha: 0.5, duration: 560, ease: 'Sine.easeOut' });
+    this.centerText.setColor('#ff6724').setFontSize(46).setScale(1.08);
+    this.bigText('END CAREER', 1800, 'PRINCESS · CROWN FIRE');
+    this.tweens.add({ targets: this.centerText, scaleX: 1.3, scaleY: 1.3, duration: 280, yoyo: true, repeat: 3, ease: 'Sine.easeInOut' });
+    this.cameras.main.flash(250, 140, 20, 50, false);
+    this.cameras.main.zoomTo(1.055, 1400, 'Sine.easeInOut');
+
+    this.time.delayedCall(1800, () => {
+      this.slowmo = 0.38;
+      winner.special = winner.cfg.special1;
+      winner.specialSlot = 1;
+      winner.specialDone = true;
+      winner.setState('special');
+      playVoice(this, 'princess_s1', 1.12);
+      SFX.special();
+
+      const handX = winner.x + facing * winner.w * 0.55;
+      const handY = winner.y - winner.cfg.height * 0.64;
+      const fireball = this.add.circle(handX, handY, 11, 0xff4a0a, 1).setStrokeStyle(5, 0xffd22e, 1).setDepth(9);
+      const core = this.add.circle(handX, handY, 5, 0xffffd0, 1).setDepth(10);
+      this.tweens.add({ targets: [fireball, core], scaleX: 1.7, scaleY: 1.7, duration: 380, yoyo: true, repeat: 1, ease: 'Sine.easeInOut' });
+      this.cameras.main.shake(520, 0.006);
+
+      this.time.delayedCall(520, () => {
+        const targetX = loser.x;
+        const targetY = loser.y - loser.cfg.height * 0.56;
+        this.tweens.add({ targets: [fireball, core], x: targetX, y: targetY, duration: 430, ease: 'Cubic.easeIn' });
+
+        for (let i = 0; i < 12; i++) {
+          this.time.delayedCall(i * 34, () => {
+            const ember = this.add.rectangle(
+              Phaser.Math.Linear(handX, targetX, i / 12),
+              Phaser.Math.Linear(handY, targetY, i / 12) + Phaser.Math.Between(-7, 7),
+              Phaser.Math.Between(3, 7), Phaser.Math.Between(3, 7),
+              i % 2 ? 0xff3b08 : 0xffc21a, 0.9
+            ).setDepth(8);
+            this.tweens.add({ targets: ember, y: ember.y - Phaser.Math.Between(8, 22), alpha: 0, duration: 320, onComplete: () => ember.destroy() });
+          });
+        }
+
+        this.time.delayedCall(430, () => {
+          fireball.destroy();
+          core.destroy();
+          SFX.heavyHit();
+          this.cameras.main.flash(210, 255, 145, 30, false);
+          this.cameras.main.shake(820, 0.045);
+          this.shockRing(targetX, targetY, 0xff7b16);
+          this.sparkAt(targetX, targetY, 0xffd12c, 34);
+          this.hitPause(230);
+
+          const burning = this.add.image(loser.x, loser.y, loser.cfg.id)
+            .setOrigin(0.5, 1)
+            .setScale(loser.baseScale)
+            .setFlipX(loser.facing === -1)
+            .setTint(0xff4a08)
+            .setDepth(7);
+          loser.sprite.setVisible(false);
+          loser.setState('ko');
+
+          const flameBurst = (wave) => {
+            if (!burning.active) return;
+            for (let i = 0; i < 11; i++) {
+              const flameX = burning.x + Phaser.Math.Between(-Math.floor(loser.w * 0.42), Math.floor(loser.w * 0.42));
+              const flameY = burning.y - Phaser.Math.Between(12, Math.floor(loser.cfg.height * 0.8));
+              const flame = this.add.circle(flameX, flameY, Phaser.Math.Between(3, 8), wave % 2 ? 0xffd21a : 0xff3b08, 0.95).setDepth(9);
+              this.tweens.add({
+                targets: flame,
+                x: flame.x + Phaser.Math.Between(-12, 12),
+                y: flame.y - Phaser.Math.Between(24, 62),
+                scaleX: 0.25,
+                alpha: 0,
+                duration: Phaser.Math.Between(330, 590),
+                ease: 'Quad.easeOut',
+                onComplete: () => flame.destroy()
+              });
+            }
+            this.sparkAt(burning.x, burning.y - loser.cfg.height * 0.5, wave % 2 ? 0xff7a0a : 0xffdc35, 8);
+          };
+
+          for (let wave = 0; wave < 8; wave++) {
+            this.time.delayedCall(wave * 230, () => flameBurst(wave));
+          }
+          this.tweens.add({ targets: burning, tint: 0x120a08, duration: 900, yoyo: true, repeat: 1 });
+          this.tweens.add({ targets: burning, scaleX: loser.baseScale * 0.9, duration: 90, yoyo: true, repeat: 10 });
+
+          this.time.delayedCall(1750, () => {
+            SFX.ko();
+            this.cameras.main.shake(520, 0.028);
+            const ashY = loser.y - 4;
+            const ashColors = [0x141111, 0x26201e, 0x3b302b, 0x5a4538];
+            const ashPile = this.add.ellipse(loser.x, ashY, Math.max(48, loser.w * 0.9), 17, 0x211a18, 1).setDepth(7);
+            ashPile.setStrokeStyle(3, 0x090707, 0.9);
+            for (let i = 0; i < 30; i++) {
+              const ash = this.add.rectangle(
+                loser.x + Phaser.Math.Between(-Math.floor(loser.w * 0.42), Math.floor(loser.w * 0.42)),
+                loser.y - Phaser.Math.Between(8, Math.floor(loser.cfg.height * 0.92)),
+                Phaser.Math.Between(2, 6), Phaser.Math.Between(2, 5),
+                ashColors[Phaser.Math.Between(0, ashColors.length - 1)], 0.95
+              ).setDepth(8).setAngle(Phaser.Math.Between(-90, 90));
+              this.tweens.add({
+                targets: ash,
+                x: loser.x + Phaser.Math.Between(-Math.floor(loser.w * 0.45), Math.floor(loser.w * 0.45)),
+                y: ashY - Phaser.Math.Between(1, 8),
+                angle: ash.angle + Phaser.Math.Between(-180, 180),
+                duration: Phaser.Math.Between(500, 1050),
+                ease: 'Quad.easeIn'
+              });
+            }
+            this.tweens.add({ targets: burning, y: ashY, scaleX: loser.baseScale * 0.3, scaleY: 0.03, alpha: 0, duration: 520, ease: 'Back.easeIn', onComplete: () => burning.destroy() });
+
+            this.time.delayedCall(650, () => {
+              winner.special = null;
+              winner.setState('win');
+              playVoice(this, 'princess_win');
+            });
+
+            this.time.delayedCall(2050, () => {
+              this.slowmo = 1;
+              this.cameras.main.zoomTo(1, 340, 'Sine.easeInOut');
+              this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
+              this.tweens.add({ targets: curtain, alpha: 0, duration: 300, onComplete: () => curtain.destroy() });
+              this.endMatch(winner, loser);
+            });
+          });
         });
       });
     });
