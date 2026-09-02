@@ -1760,23 +1760,36 @@ class FightScene extends Phaser.Scene {
           cracks.setAlpha(0);
           this.tweens.add({ targets: cracks, alpha: 1, duration: 120, ease: 'Stepped' });
 
-          this.time.delayedCall(420, () => {
+          // Keep the body on the foreground glass, hold the impact, then drag it
+          // slowly down the screen with visible streaks behind it.
+          victim.setDepth(31);
+          const glassSmear = this.add.graphics().setDepth(29);
+          this.time.delayedCall(650, () => {
+            let previousY = victim.y;
             this.tweens.add({
               targets: victim,
-              y: GAME_H + loser.cfg.height * loser.baseScale * 2.2,
-              angle: facing * 7,
-              duration: 1350,
-              ease: 'Sine.easeIn'
+              y: GAME_H + loser.cfg.height * 1.4,
+              angle: facing * 9,
+              duration: 1650,
+              ease: 'Sine.easeInOut',
+              onUpdate: () => {
+                const bodyCenterY = victim.y - victim.displayHeight * 0.48;
+                const oldCenterY = previousY - victim.displayHeight * 0.48;
+                glassSmear.lineStyle(12, 0xccecff, 0.045).lineBetween(victim.x - 31, oldCenterY, victim.x - 31, bodyCenterY);
+                glassSmear.lineStyle(7, 0x9fcbe4, 0.055).lineBetween(victim.x + 24, oldCenterY, victim.x + 24, bodyCenterY);
+                glassSmear.lineStyle(2, 0xffffff, 0.16).lineBetween(victim.x + 4, oldCenterY, victim.x + 4, bodyCenterY);
+                previousY = victim.y;
+              }
             });
           });
 
-          this.time.delayedCall(780, () => {
+          this.time.delayedCall(1000, () => {
             winner.special = null;
             winner.setState('win');
             playVoice(this, 'djmontay_win');
           });
 
-          this.time.delayedCall(2350, () => {
+          this.time.delayedCall(3000, () => {
             this.slowmo = 1;
             this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
             this.tweens.add({ targets: curtain, alpha: 0, duration: 300, onComplete: () => curtain.destroy() });
