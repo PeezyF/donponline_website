@@ -34,6 +34,7 @@ class Fighter {
     this.lastHitT = -9999;
     this.invulnUntil = 0;
     this.prev = { punch: false, kick: false, block: false };
+    this.prevFwd = false;
     this.bobT = Math.random() * 1000;
 
     const tex = scene.textures.get(cfg.id).getSourceImage();
@@ -77,7 +78,7 @@ class Fighter {
     // ---- QCF buffer (down -> forward)
     const fwd = this.facing === 1 ? inp.right : inp.left;
     if (inp.down) this.pushDir('D');
-    if (fwd) this.pushDir('F');
+    if (fwd && !this.prevFwd) this.pushDir('F');
     this.comboInput = this.comboInput.filter(e => S.now - e.t < 450);
 
     // ---- gravity
@@ -146,7 +147,9 @@ class Fighter {
             if (punchDown) this.startAttack('cpunch');
             else if (kickDown) this.startAttack('ckick');
           } else {
-            // specials first (QCF + button)
+            // Don P's third special: tap toward twice, then Punch.
+            if (punchDown && this.cfg.special3 && this.hasDoubleForward()) { this.startSpecial(this.cfg.special3, 3); break; }
+            // standard specials (QCF + button)
             if (punchDown && this.hasQCF()) { this.startSpecial(this.cfg.special1, 1); break; }
             if (kickDown && this.hasQCF()) { this.startSpecial(this.cfg.special2, 2); break; }
             // throw: punch+kick together, close range
@@ -188,13 +191,20 @@ class Fighter {
     }
 
     this.prev = { punch: inp.punch, kick: inp.kick, block: inp.block };
+    this.prevFwd = fwd;
     this.render();
   }
 
   setStateIf(s) { if (this.state !== s) this.setState(s); }
   pushDir(d) {
     const last = this.comboInput[this.comboInput.length - 1];
-    if (!last || last.dir !== d) this.comboInput.push({ dir: d, t: this.scene.now });
+    if (!last || last.dir !== d || this.scene.now - last.t > 70) this.comboInput.push({ dir: d, t: this.scene.now });
+  }
+  hasDoubleForward() {
+    const seq = this.comboInput;
+    for (let i = seq.length - 1; i > 0; i--)
+      if (seq[i].dir === 'F' && seq[i - 1].dir === 'F' && seq[i].t - seq[i - 1].t <= 380) return true;
+    return false;
   }
   hasQCF() {
     const seq = this.comboInput;
@@ -320,6 +330,14 @@ class Fighter {
           S.spawnProjectile(this, d);
         }
         if (t > 480) this.endSpecial();
+        break;
+
+      case 'eyelasers':
+        if (t > 280 && !this.specialDone) {
+          this.specialDone = true;
+          S.fireEyeLasers(this, opp, d);
+        }
+        if (t > 920) this.endSpecial();
         break;
 
       case 'rush': {
@@ -849,6 +867,44 @@ class FightScene extends Phaser.Scene {
     const p = this.add.ellipse(owner.x + owner.facing * (owner.w + 16), owner.y - owner.cfg.height * 0.62, 30, 18, def.color).setDepth(5);
     const glow = this.add.ellipse(p.x, p.y, 44, 28, def.color, 0.3).setDepth(4);
     this.projectiles.push({ p, glow, vx: owner.facing * 380, owner, def });
+  }
+
+  fireEyeLasers(owner, opp, def) {
+    const eyeX = owner.x + owner.facing * 7;
+    const eyeY = owner.y - owner.cfg.height * 0.82;
+    const targetX = owner.facing > 0 ? GAME_W + 30 : -30;
+    const targetY = eyeY + 3;
+    const beam = this.add.graphics().setDepth(9).setBlendMode(Phaser.BlendModes.ADD);
+    beam.lineStyle(18, 0x5a0010, 0.42).lineBetween(eyeX, eyeY, targetX, targetY);
+    beam.lineStyle(9, def.color, 0.96).lineBetween(eyeX, eyeY - 3, targetX, targetY - 3);
+    beam.lineStyle(7, 0xff3148, 0.96).lineBetween(eyeX, eyeY + 4, targetX, targetY + 4);
+    beam.lineStyle(2, 0xffffff, 1).lineBetween(eyeX, eyeY - 2, targetX, targetY - 2);
+    beam.lineStyle(2, 0xffb7bc, 1).lineBetween(eyeX, eyeY + 4, targetX, targetY + 4);
+
+    const eyeGlow = this.add.circle(eyeX, eyeY, 13, def.color, 0.75).setDepth(10).setBlendMode(Phaser.BlendModes.ADD);
+    const eyeCore = this.add.circle(eyeX, eyeY, 4, 0xffffff, 1).setDepth(11);
+    this.cameras.main.flash(100, 255, 20, 45, false);
+    this.cameras.main.shake(340, 0.016);
+    this.hitPause(80);
+
+    for (let i = 0; i < 22; i++) {
+      const px = Phaser.Math.Linear(eyeX, targetX, Math.random());
+      const spark = this.add.rectangle(px, targetY + Phaser.Math.Between(-9, 9), Phaser.Math.Between(3, 9), 2, i % 3 ? 0xff1936 : 0xffffff, 0.9).setDepth(10);
+      this.tweens.add({ targets: spark, x: px + owner.facing * Phaser.Math.Between(25, 80), alpha: 0, duration: Phaser.Math.Between(160, 360), onComplete: () => spark.destroy() });
+    }
+
+    const opponentIsAhead = (opp.x - owner.x) * owner.facing > 0;
+    if (opponentIsAhead) {
+      const hitY = opp.y - opp.cfg.height * 0.64;
+      opp.takeHit(def.dmg * owner.cfg.dmg, 340 * owner.facing / opp.cfg.weight, owner, { knockdown: true });
+      this.shockRing(opp.x, hitY, def.color);
+      this.sparkAt(opp.x, hitY, 0xff2940, 28);
+      this.impactSprayAt(opp.x, hitY, owner.facing, true);
+    }
+
+    this.tweens.add({ targets: [beam, eyeGlow, eyeCore], alpha: 0, duration: 360, delay: 170, onComplete: () => {
+      beam.destroy(); eyeGlow.destroy(); eyeCore.destroy();
+    }});
   }
 
   spawnAssist(owner, def) {

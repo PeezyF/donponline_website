@@ -10,7 +10,8 @@ const CHARACTERS = [
     id: 'donp', name: 'DON P',
     height: 160, health: 100, speed: 170, jump: 560, weight: 1.0, dmg: 1.0,
     special1: { name: 'CHAIN SNATCH', type: 'projectile', color: 0xffcc33, dmg: 12 },
-    special2: { name: 'NEVA EVA RUSH', type: 'rush', color: 0xff4433, dmg: 16 }
+    special2: { name: 'NEVA EVA RUSH', type: 'rush', color: 0xff4433, dmg: 16 },
+    special3: { name: 'RED EYE LASERS', type: 'eyelasers', color: 0xff1028, dmg: 18 }
   },
   {
     id: 'liljon', name: 'LIL JON',
