@@ -252,7 +252,7 @@ class TitleScene extends Phaser.Scene {
   create() {
     this.add.image(GAME_W / 2, GAME_H / 2, 'opening1').setDisplaySize(GAME_W, GAME_H);
     const press = this.add.text(GAME_W / 2, GAME_H * 0.86, isTouch() ? 'TAP TO START' : 'PRESS START', { fontFamily: 'monospace', fontSize: '18px', color: '#ffffff', stroke: '#000', strokeThickness: 4, fontStyle: 'bold' }).setOrigin(0.5);
-    this.add.text(GAME_W - 6, GAME_H - 6, 'v4.3', { fontFamily: 'monospace', fontSize: '10px', color: '#ffe066', stroke: '#000', strokeThickness: 2 }).setOrigin(1, 1);
+    this.add.text(GAME_W - 6, GAME_H - 6, 'v4.5', { fontFamily: 'monospace', fontSize: '10px', color: '#ffe066', stroke: '#000', strokeThickness: 2 }).setOrigin(1, 1);
     this.tweens.add({ targets: press, alpha: 0.15, yoyo: true, repeat: -1, duration: 550 });
     const go = () => { unlockAudio(); SFX.confirm(); this.scene.start('ModeSelect'); };
     this.input.keyboard.once('keydown', go);
@@ -268,7 +268,7 @@ class ModeSelectScene extends Phaser.Scene {
     this.add.image(GAME_W / 2, GAME_H / 2, 'opening1').setDisplaySize(GAME_W, GAME_H);
     playMusic(this, 'beat2_menu', 0.55);
     buildMenuPanel(this, '', [
-      ['VS CPU', () => this.scene.start('CharSelect', { mode: 'vscpu' })],
+      ['VS CPU', () => this.scene.start('DifficultySelect')],
       ['2 PLAYERS', () => this.scene.start('CharSelect', { mode: 'vs' })],
       ['ARCADE TOWER', () => this.scene.start('CharSelect', { mode: 'tower' })],
       ['TRAINING', () => this.scene.start('CharSelect', { mode: 'training' })]
@@ -280,9 +280,42 @@ class ModeSelectScene extends Phaser.Scene {
 }
 
 // ============================================================
+class DifficultySelectScene extends Phaser.Scene {
+  constructor() { super('DifficultySelect'); }
+  create() {
+    this.add.image(GAME_W / 2, GAME_H / 2, 'opening2').setDisplaySize(GAME_W, GAME_H).setAlpha(0.72);
+    this.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, 0x04040c, 0.42);
+    this.add.text(GAME_W / 2, 72, 'SELECT DIFFICULTY', {
+      fontFamily: 'monospace', fontSize: '25px', color: '#ffe066', stroke: '#000', strokeThickness: 5, fontStyle: 'bold'
+    }).setOrigin(0.5);
+    this.add.text(GAME_W / 2, 102, 'HOW HARD DO YOU WANT THE CPU?', {
+      fontFamily: 'monospace', fontSize: '11px', color: '#ffffff', stroke: '#000', strokeThickness: 3
+    }).setOrigin(0.5);
+
+    const choose = level => this.scene.start('CharSelect', { mode: 'vscpu', aiLevel: level });
+    buildMenuPanel(this, '', [
+      ['EASY', () => choose(1)],
+      ['MEDIUM', () => choose(2)],
+      ['HARD', () => choose(3)]
+    ], 220, 36);
+
+    const notes = [
+      ['EASY', 'MORE OPENINGS · SLOWER REACTIONS', '#62db7c'],
+      ['MEDIUM', 'BALANCED PRESSURE · SMART DEFENSE', '#ffd35a'],
+      ['HARD', 'FAST COUNTERS · COMBOS · NO MERCY', '#ff4a42']
+    ];
+    notes.forEach((n, i) => {
+      this.add.text(GAME_W / 2, 335 + i * 22, n[0] + '  ' + n[1], {
+        fontFamily: 'monospace', fontSize: '10px', color: n[2], stroke: '#000', strokeThickness: 3
+      }).setOrigin(0.5);
+    });
+  }
+}
+
+// ============================================================
 class CharSelectScene extends Phaser.Scene {
   constructor() { super('CharSelect'); }
-  init(d) { this.mode = d.mode; }
+  init(d) { this.mode = d.mode; this.aiLevel = d.aiLevel; }
   create() {
     this.add.image(GAME_W / 2, GAME_H / 2, 'charbg').setDisplaySize(GAME_W, GAME_H);
     this.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, 0x000010, 0.25);
@@ -483,7 +516,7 @@ class CharSelectScene extends Phaser.Scene {
   launch() {
     const p1 = CHARACTERS[this.p1pick].id;
     if (this.mode === 'vs' || this.mode === 'vscpu') {
-      this.scene.start('StageSelect', { mode: this.mode, p1CharId: p1, p2CharId: CHARACTERS[this.p2pick].id });
+      this.scene.start('StageSelect', { mode: this.mode, aiLevel: this.aiLevel, p1CharId: p1, p2CharId: CHARACTERS[this.p2pick].id });
     } else if (this.mode === 'training') {
       this.scene.start('StageSelect', { mode: 'training', p1CharId: p1, p2CharId: p1 });
     } else {

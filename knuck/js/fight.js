@@ -638,24 +638,33 @@ class FightScene extends Phaser.Scene {
         st.move = Math.random() < 0.5 ? 'wait' : 'retreat';
         st.t = 350 + Math.random() * 300;
       } else {
-        st.t = 380 - lvl * 20 + Math.random() * 300;
+        st.t = lvl >= 3 ? 120 + Math.random() * 150 : lvl === 2 ? 260 + Math.random() * 230 : 430 + Math.random() * 320;
         const r = Math.random();
         if (dist > 220) {
-          if (r < 0.10 + lvl * 0.03) st.move = 'special1';
-          else if (r < 0.82) st.move = 'approach';
+          if (r < (lvl >= 3 ? 0.28 : 0.08 + lvl * 0.03)) st.move = 'special1';
+          else if (r < (lvl >= 3 ? 0.94 : 0.76)) st.move = 'approach';
           else st.move = 'wait';
         } else if (dist > 90) {
-          if (r < 0.07 + lvl * 0.03) st.move = 'special2';
-          else if (r < 0.26) st.move = 'jumpin';
-          else if (r < 0.72) st.move = 'approach';
+          if (r < (lvl >= 3 ? 0.22 : 0.06 + lvl * 0.03)) st.move = 'special2';
+          else if (r < (lvl >= 3 ? 0.48 : 0.24)) st.move = 'jumpin';
+          else if (r < (lvl >= 3 ? 0.93 : 0.7)) st.move = 'approach';
           else st.move = 'wait';
         } else {
-          const agg = 0.20 + lvl * 0.05;
-          if (r < 0.14 && lvl > 0) st.move = 'block';
-          else if (r < 0.14 + agg) st.move = Math.random() < 0.5 ? 'punch' : 'kick';
-          else if (r < 0.14 + agg + 0.10) st.move = 'lowkick';
-          else if (r < 0.14 + agg + 0.34) st.move = 'retreat';
-          else st.move = 'wait';
+          if (lvl >= 3) {
+            if (['attack', 'jumpattack', 'special'].includes(opp.state) && r < 0.42) st.move = 'block';
+            else if (r < 0.57) st.move = Math.random() < 0.42 ? 'punch' : 'kick';
+            else if (r < 0.76) st.move = 'lowkick';
+            else if (r < 0.9) st.move = Math.random() < 0.5 ? 'special1' : 'special2';
+            else st.move = 'retreat';
+          } else {
+            const agg = lvl === 2 ? 0.34 : 0.23;
+            const guard = lvl === 2 ? 0.18 : 0.09;
+            if (r < guard) st.move = 'block';
+            else if (r < guard + agg) st.move = Math.random() < 0.5 ? 'punch' : 'kick';
+            else if (r < guard + agg + (lvl === 2 ? 0.14 : 0.08)) st.move = 'lowkick';
+            else if (r < guard + agg + 0.34) st.move = 'retreat';
+            else st.move = 'wait';
+          }
         }
       }
     }
@@ -669,15 +678,15 @@ class FightScene extends Phaser.Scene {
       // ONE attack per decision, then a forced breather - the actual anti-spam
       case 'punch':
         inp.punch = true;
-        st.move = 'wait'; st.t = 420 - lvl * 22 + Math.random() * 380;
+        st.move = 'wait'; st.t = lvl >= 3 ? 120 + Math.random() * 150 : 450 - lvl * 45 + Math.random() * 330;
         break;
       case 'kick':
         inp.kick = true;
-        st.move = 'wait'; st.t = 440 - lvl * 22 + Math.random() * 380;
+        st.move = 'wait'; st.t = lvl >= 3 ? 135 + Math.random() * 165 : 470 - lvl * 45 + Math.random() * 340;
         break;
       case 'lowkick':
         inp.down = true; inp.kick = true;
-        st.move = 'wait'; st.t = 460 - lvl * 22 + Math.random() * 380;
+        st.move = 'wait'; st.t = lvl >= 3 ? 150 + Math.random() * 170 : 490 - lvl * 45 + Math.random() * 350;
         break;
       case 'special1': case 'special2': {
         if (!st.qcfPhase) st.qcfPhase = 1;
@@ -687,7 +696,7 @@ class FightScene extends Phaser.Scene {
           inp[dir] = true;
           if (st.move === 'special1') inp.punch = true; else inp.kick = true;
           st.qcfPhase = 0;
-          st.move = 'wait'; st.t = 550 - lvl * 20 + Math.random() * 400;
+          st.move = 'wait'; st.t = lvl >= 3 ? 180 + Math.random() * 180 : 570 - lvl * 45 + Math.random() * 370;
         }
         break;
       }

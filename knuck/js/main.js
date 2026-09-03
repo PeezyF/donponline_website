@@ -11,7 +11,7 @@ const game = new Phaser.Game({
   parent: 'game',
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
   input: { gamepad: true, activePointers: 4 },
-  scene: [IntroScene, BootScene, TitleScene, ModeSelectScene, CharSelectScene, StageSelectScene, LadderScene, FightScene]
+  scene: [IntroScene, BootScene, TitleScene, ModeSelectScene, DifficultySelectScene, CharSelectScene, StageSelectScene, LadderScene, FightScene]
 });
 window.knuckGame = game;
 
