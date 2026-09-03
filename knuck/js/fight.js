@@ -1153,9 +1153,12 @@ class FightScene extends Phaser.Scene {
         const chestY = groundY - loser.cfg.height * 0.58;
         const body = this.add.image(loser.x, groundY, loser.cfg.id)
           .setOrigin(0.5, 1).setScale(loser.baseScale).setFlipX(loser.facing === -1).setDepth(7);
-        const spirit = this.add.image(loser.x, groundY, loser.cfg.id)
-          .setOrigin(0.5, 1).setScale(loser.baseScale).setFlipX(loser.facing === -1)
-          .setTint(0xff274c).setAlpha(0.82).setBlendMode(Phaser.BlendModes.ADD).setDepth(11);
+        const soulSource = this.textures.get('soul_snatch_spirit').getSourceImage();
+        const soulScale = (loser.cfg.height * 1.65) / soulSource.height;
+        const spirit = this.add.image(loser.x, groundY, 'soul_snatch_spirit')
+          .setOrigin(0.5, 1).setScale(soulScale * 0.72).setAlpha(0.1)
+          .setBlendMode(Phaser.BlendModes.ADD).setDepth(11);
+        const tether = this.add.graphics().setDepth(10);
         loser.sprite.setVisible(false);
         loser.setState('ko');
 
@@ -1171,8 +1174,29 @@ class FightScene extends Phaser.Scene {
         const spiritX = Phaser.Math.Clamp(winner.x + facing * 34, 40, GAME_W - 40);
         const spiritY = winner.y - winner.cfg.height - 58;
         this.tweens.add({
-          targets: spirit, x: spiritX, y: spiritY, scaleX: loser.baseScale * 1.18,
-          scaleY: loser.baseScale * 1.18, angle: facing * 10, duration: 1180, ease: 'Back.easeOut'
+          targets: spirit, x: spiritX, y: spiritY, alpha: 1,
+          scaleX: soulScale, scaleY: soulScale, angle: facing * 8, duration: 1350, ease: 'Back.easeOut',
+          onUpdate: () => {
+            tether.clear();
+            tether.lineStyle(9, 0x4b0014, 0.55);
+            tether.beginPath();
+            tether.moveTo(loser.x, chestY);
+            tether.lineTo(Phaser.Math.Linear(loser.x, spirit.x, 0.35) + Phaser.Math.Between(-8, 8), Phaser.Math.Linear(chestY, spirit.y, 0.35));
+            tether.lineTo(Phaser.Math.Linear(loser.x, spirit.x, 0.7) + Phaser.Math.Between(-10, 10), Phaser.Math.Linear(chestY, spirit.y, 0.7));
+            tether.lineTo(spirit.x, spirit.y - 4);
+            tether.strokePath();
+            tether.lineStyle(3, 0xff3158, 0.9);
+            tether.strokePath();
+          }
+        });
+
+        this.time.delayedCall(430, () => {
+          this.cameras.main.flash(110, 120, 0, 180, false);
+          this.shockRing(loser.x, chestY, 0xb93cff);
+        });
+        this.time.delayedCall(880, () => {
+          this.cameras.main.shake(360, 0.018);
+          this.shockRing(spirit.x, spirit.y - spirit.displayHeight * 0.42, 0xff274d);
         });
 
         for (let i = 0; i < 8; i++) {
@@ -1180,19 +1204,20 @@ class FightScene extends Phaser.Scene {
             const echo = this.add.image(
               Phaser.Math.Linear(loser.x, spiritX, i / 8),
               Phaser.Math.Linear(groundY, spiritY, i / 8),
-              loser.cfg.id
-            ).setOrigin(0.5, 1).setScale(loser.baseScale * (0.72 + i * 0.035))
-              .setFlipX(loser.facing === -1).setTint(i % 2 ? 0xff1744 : 0x8d35ff)
+              'soul_snatch_spirit'
+            ).setOrigin(0.5, 1).setScale(soulScale * (0.58 + i * 0.045))
+              .setTint(i % 2 ? 0xff1744 : 0x8d35ff)
               .setAlpha(0.2).setBlendMode(Phaser.BlendModes.ADD).setDepth(10);
             this.tweens.add({ targets: echo, alpha: 0, scaleX: echo.scaleX * 1.18, scaleY: echo.scaleY * 1.18, duration: 620, onComplete: () => echo.destroy() });
           });
         }
 
         this.time.delayedCall(1450, () => {
-          const source = this.textures.get(loser.cfg.id).getSourceImage();
+          const source = soulSource;
           const burstX = spirit.x;
           const burstY = spirit.y - spirit.displayHeight * 0.45;
           spirit.destroy();
+          tether.destroy();
           SFX.ko();
           SFX.heavyHit();
           this.cameras.main.flash(240, 255, 30, 70, false);
@@ -1208,8 +1233,8 @@ class FightScene extends Phaser.Scene {
           const pieceH = Math.ceil(source.height / rows);
           for (let row = 0; row < rows; row++) {
             for (let col = 0; col < cols; col++) {
-              const shard = this.add.image(burstX, burstY, loser.cfg.id)
-                .setOrigin(0.5).setScale(loser.baseScale * 0.9).setFlipX(loser.facing === -1)
+              const shard = this.add.image(burstX, burstY, 'soul_snatch_spirit')
+                .setOrigin(0.5).setScale(soulScale * 1.08)
                 .setTint(row % 2 ? 0xff153a : 0x8f38ff).setBlendMode(Phaser.BlendModes.ADD).setDepth(12);
               shard.setCrop(col * pieceW, row * pieceH, Math.min(pieceW, source.width - col * pieceW), Math.min(pieceH, source.height - row * pieceH));
               this.tweens.add({

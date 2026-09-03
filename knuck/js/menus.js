@@ -230,6 +230,7 @@ class BootScene extends Phaser.Scene {
     this.load.image('opening1', 'assets/stages/opening1.png');
     this.load.image('opening2', 'assets/stages/opening2.png');
     this.load.image('charbg', 'assets/stages/charbg.png');
+    this.load.image('soul_snatch_spirit', 'assets/ui/soul-snatch-spirit.png');
     this.load.audio('beat1', 'assets/music/beat1.ogg');
     this.load.audio('beat2_menu', 'assets/music/beat2_menu.ogg');
     this.load.audio('beat3', 'assets/music/beat3.ogg');
