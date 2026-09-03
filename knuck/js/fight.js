@@ -365,6 +365,14 @@ class Fighter {
         if (t > 1080) this.endSpecial();
         break;
 
+      case 'spinningkick':
+        if (t > 150 && !this.specialDone) {
+          this.specialDone = true;
+          S.performSpinningKick(this, opp, d);
+        }
+        if (t > 1050) this.endSpecial();
+        break;
+
       case 'rush': {
         if (t > 140 && t < 420) {
           this.x += this.facing * 620 * (dt / 1000);
@@ -1136,6 +1144,69 @@ class FightScene extends Phaser.Scene {
         this.tweens.add({ targets: glitter, y: glitter.y - 24, alpha: 0, duration: 380, onComplete: () => glitter.destroy() });
       });
     }
+  }
+
+  performSpinningKick(owner, opp, def) {
+    const kickKey = this.textures.exists(owner.cfg.id + '_kick') ? owner.cfg.id + '_kick' : owner.cfg.id;
+    const spinner = this.add.image(owner.x, owner.y - 8, kickKey)
+      .setOrigin(0.5, 1).setScale(owner.baseScale).setFlipX(owner.facing === -1).setDepth(10);
+    owner.sprite.setVisible(false);
+    const startX = owner.x;
+    const travel = owner.facing * 92;
+    const motion = { p: 0 };
+    let connected = false;
+
+    this.cameras.main.zoomTo(1.045, 190, 'Sine.easeInOut');
+    this.tweens.add({
+      targets: motion,
+      p: 1,
+      duration: 680,
+      ease: 'Cubic.easeInOut',
+      onUpdate: () => {
+        spinner.x = startX + travel * motion.p;
+        spinner.y = owner.y - 8 - Math.sin(motion.p * Math.PI) * 24;
+        spinner.setAngle(owner.facing * 760 * motion.p);
+        const pulse = 1 + Math.sin(motion.p * Math.PI * 6) * 0.045;
+        spinner.setScale(owner.baseScale * pulse);
+
+        if (!connected && motion.p > 0.48) {
+          const ahead = (opp.x - startX) * owner.facing > 0;
+          const dist = Math.abs(opp.x - spinner.x);
+          if (ahead && dist <= owner.w + opp.w + 54 && opp.state !== 'down' && opp.state !== 'ko') {
+            connected = true;
+            const hitY = opp.y - opp.cfg.height * 0.52;
+            opp.takeHit(def.dmg * owner.cfg.dmg, 390 * owner.facing / opp.cfg.weight, owner, { knockdown: true });
+            SFX.heavyHit();
+            this.cameras.main.flash(130, 135, 225, 255, false);
+            this.cameras.main.shake(590, 0.037);
+            this.shockRing(opp.x, hitY, def.color);
+            this.sparkAt(opp.x, hitY, 0xbceeff, 34);
+            this.impactSprayAt(opp.x, hitY, owner.facing, true);
+            this.hitPause(155);
+          }
+        }
+      },
+      onComplete: () => {
+        owner.x = Phaser.Math.Clamp(startX + travel * 0.72, 30, GAME_W - 30);
+        spinner.destroy();
+        owner.sprite.setVisible(true);
+        owner.sprite.setAngle(0);
+        this.cameras.main.zoomTo(1, 220, 'Sine.easeInOut');
+      }
+    });
+
+    for (let i = 0; i < 10; i++) {
+      this.time.delayedCall(70 + i * 55, () => {
+        const trail = this.add.image(spinner.x, spinner.y, kickKey)
+          .setOrigin(0.5, 1).setScale(owner.baseScale).setFlipX(owner.facing === -1)
+          .setAngle(spinner.angle).setTint(i % 2 ? def.color : 0xff78c8).setAlpha(0.2).setDepth(8);
+        this.tweens.add({ targets: trail, alpha: 0, scaleX: trail.scaleX * 1.13, scaleY: trail.scaleY * 1.13, duration: 360, onComplete: () => trail.destroy() });
+      });
+    }
+
+    const spinRing = this.add.ellipse(startX + travel * 0.45, owner.y - owner.cfg.height * 0.48, 150, 54, def.color, 0.08)
+      .setStrokeStyle(5, def.color, 0.72).setDepth(9);
+    this.tweens.add({ targets: spinRing, angle: owner.facing * 540, scaleX: 1.35, scaleY: 1.35, alpha: 0, duration: 760, ease: 'Cubic.easeOut', onComplete: () => spinRing.destroy() });
   }
 
   spawnAssist(owner, def) {

@@ -43,7 +43,8 @@ const CHARACTERS = [
     id: 'diamond', name: 'DIAMOND',
     height: 150, health: 90, speed: 215, jump: 590, weight: 0.8, dmg: 0.9,
     special1: { name: 'KNUCK FURY', type: 'flurry', color: 0xff55aa, dmg: 5 },
-    special2: { name: 'DOUBLE SLAP DASH', type: 'rush', color: 0xff88cc, dmg: 14 }
+    special2: { name: 'DOUBLE SLAP DASH', type: 'rush', color: 0xff88cc, dmg: 14 },
+    special3: { name: 'DIAMOND SPIN KICK', type: 'spinningkick', input: 'kick', color: 0x65cfff, dmg: 19 }
   },
   {
     id: 'princess', name: 'PRINCESS',
