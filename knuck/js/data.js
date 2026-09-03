@@ -49,7 +49,8 @@ const CHARACTERS = [
     id: 'princess', name: 'PRINCESS',
     height: 150, health: 90, speed: 210, jump: 600, weight: 0.8, dmg: 0.9,
     special1: { name: 'EARRING SHURIKEN', type: 'projectile', color: 0xff66dd, dmg: 11 },
-    special2: { name: 'STILETTO STRIKE', type: 'uppercut', color: 0xffaaee, dmg: 15 }
+    special2: { name: 'STILETTO STRIKE', type: 'uppercut', color: 0xffaaee, dmg: 15 },
+    special3: { name: 'ROYAL BACKBEND', type: 'backbendkick', input: 'kick', color: 0xff4fc8, dmg: 18 }
   },
   {
     id: 'djscream', name: 'DJ SCREAM',

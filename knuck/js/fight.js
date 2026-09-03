@@ -147,8 +147,9 @@ class Fighter {
             if (punchDown) this.startAttack('cpunch');
             else if (kickDown) this.startAttack('ckick');
           } else {
-            // Don P's third special: tap toward twice, then Punch.
-            if (punchDown && this.cfg.special3 && this.hasDoubleForward()) { this.startSpecial(this.cfg.special3, 3); break; }
+            // Third specials: tap toward twice, then the fighter's assigned attack button.
+            const thirdButtonDown = this.cfg.special3 && this.cfg.special3.input === 'kick' ? kickDown : punchDown;
+            if (thirdButtonDown && this.cfg.special3 && this.hasDoubleForward()) { this.startSpecial(this.cfg.special3, 3); break; }
             // standard specials (QCF + button)
             if (punchDown && this.hasQCF()) { this.startSpecial(this.cfg.special1, 1); break; }
             if (kickDown && this.hasQCF()) { this.startSpecial(this.cfg.special2, 2); break; }
@@ -354,6 +355,14 @@ class Fighter {
           S.performChokeThrow(this, opp, d);
         }
         if (t > 1250) this.endSpecial();
+        break;
+
+      case 'backbendkick':
+        if (t > 170 && !this.specialDone) {
+          this.specialDone = true;
+          S.performBackbendKick(this, opp, d);
+        }
+        if (t > 1080) this.endSpecial();
         break;
 
       case 'rush': {
@@ -1053,6 +1062,80 @@ class FightScene extends Phaser.Scene {
         }
       });
     });
+  }
+
+  performBackbendKick(owner, opp, def) {
+    const kickKey = this.textures.exists(owner.cfg.id + '_kick') ? owner.cfg.id + '_kick' : owner.cfg.id;
+    const performer = this.add.image(owner.x, owner.y, kickKey)
+      .setOrigin(0.5, 1).setScale(owner.baseScale).setFlipX(owner.facing === -1).setDepth(10);
+    owner.sprite.setVisible(false);
+    const arc = this.add.graphics().setDepth(9).setBlendMode(Phaser.BlendModes.ADD);
+    const motion = { p: 0 };
+    let connected = false;
+
+    this.cameras.main.zoomTo(1.055, 230, 'Sine.easeInOut');
+    this.tweens.add({
+      targets: motion,
+      p: 1,
+      duration: 430,
+      ease: 'Back.easeOut',
+      yoyo: true,
+      hold: 125,
+      onUpdate: () => {
+        const bend = Math.sin(motion.p * Math.PI);
+        performer.x = owner.x - owner.facing * 7 * bend;
+        performer.y = owner.y + 8 * bend;
+        performer.setAngle(-owner.facing * 58 * motion.p);
+        performer.setScale(owner.baseScale * (1 + 0.05 * bend), owner.baseScale * (1 - 0.08 * bend));
+
+        arc.clear();
+        const heelX = owner.x + owner.facing * (24 + 70 * motion.p);
+        const heelY = owner.y - 28 - owner.cfg.height * 0.67 * motion.p;
+        for (let i = 0; i < 4; i++) {
+          arc.lineStyle(9 - i * 2, i === 0 ? 0x4d073d : i === 1 ? def.color : 0xffffff, 0.22 + i * 0.16);
+          arc.beginPath();
+          arc.moveTo(owner.x + owner.facing * 20, owner.y - 24 - i * 3);
+          arc.lineTo(owner.x + owner.facing * (48 + 24 * motion.p), owner.y - 62 - i * 5);
+          arc.lineTo(heelX, heelY);
+          arc.strokePath();
+        }
+
+        if (!connected && motion.p > 0.72) {
+          const ahead = (opp.x - owner.x) * owner.facing > 0;
+          const dist = Math.abs(opp.x - owner.x);
+          if (ahead && dist <= owner.w + opp.w + 82 && opp.state !== 'down' && opp.state !== 'ko') {
+            connected = true;
+            const chinY = opp.y - opp.cfg.height * 0.78;
+            opp.takeHit(def.dmg * owner.cfg.dmg, 145 * owner.facing / opp.cfg.weight, owner, { launch: true });
+            SFX.heavyHit();
+            this.cameras.main.flash(115, 255, 100, 220, false);
+            this.cameras.main.shake(520, 0.033);
+            this.shockRing(opp.x, chinY, def.color);
+            this.sparkAt(opp.x, chinY, 0xffb8ed, 30);
+            this.impactSprayAt(opp.x, chinY, owner.facing, true);
+            this.hitPause(145);
+          }
+        }
+      },
+      onComplete: () => {
+        performer.destroy();
+        arc.destroy();
+        owner.sprite.setVisible(true);
+        owner.sprite.setAngle(0);
+        this.cameras.main.zoomTo(1, 220, 'Sine.easeInOut');
+      }
+    });
+
+    for (let i = 0; i < 10; i++) {
+      this.time.delayedCall(110 + i * 38, () => {
+        const glitter = this.add.circle(
+          owner.x + owner.facing * Phaser.Math.Between(28, 92),
+          owner.y - Phaser.Math.Between(38, 130),
+          Phaser.Math.Between(2, 4), i % 2 ? def.color : 0xffe0f7, 0.88
+        ).setDepth(11);
+        this.tweens.add({ targets: glitter, y: glitter.y - 24, alpha: 0, duration: 380, onComplete: () => glitter.destroy() });
+      });
+    }
   }
 
   spawnAssist(owner, def) {
