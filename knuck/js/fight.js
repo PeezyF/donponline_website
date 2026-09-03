@@ -905,7 +905,13 @@ class FightScene extends Phaser.Scene {
 
   afterRound(winner, loser) {
     if (winner.roundsWon >= 2 && winner.cfg.id === 'donp') {
-      this.startDonPFinisher(winner, loser);
+      let useSoulSnatch = true;
+      try {
+        useSoulSnatch = localStorage.getItem('knuck_donp_last_ender') !== 'soul';
+        localStorage.setItem('knuck_donp_last_ender', useSoulSnatch ? 'soul' : 'stomp');
+      } catch (_) { /* Storage may be unavailable; default to the new finisher. */ }
+      if (useSoulSnatch) this.startDonPSoulSnatch(winner, loser);
+      else this.startDonPFinisher(winner, loser);
       return;
     }
     if (winner.roundsWon >= 2 && winner.cfg.id === 'liljon') {
@@ -1104,6 +1110,130 @@ class FightScene extends Phaser.Scene {
           this.cameras.main.zoomTo(1, 320, 'Sine.easeInOut');
           this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
           this.tweens.add({ targets: curtain, alpha: 0, duration: 280, onComplete: () => curtain.destroy() });
+          this.endMatch(winner, loser);
+        });
+      });
+    });
+  }
+
+  startDonPSoulSnatch(winner, loser) {
+    const facing = loser.x >= winner.x ? 1 : -1;
+    winner.facing = facing;
+    loser.facing = -facing;
+    winner.setState('idle');
+    loser.setState('hitstun');
+    loser.hitstun = 9999;
+    stopMusic(this);
+
+    const curtain = this.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, 0x050008, 0).setDepth(9);
+    curtain.setStrokeStyle(4, 0xd20b24, 0.92);
+    this.tweens.add({ targets: curtain, alpha: 0.6, duration: 560, ease: 'Sine.easeOut' });
+    this.centerText.setColor('#ff2438').setFontSize(46).setScale(1.08);
+    this.bigText('CAREER ENDER', 1850, 'DON P · SOUL SNATCH');
+    this.tweens.add({ targets: this.centerText, scaleX: 1.32, scaleY: 1.32, duration: 270, yoyo: true, repeat: 3, ease: 'Sine.easeInOut' });
+    this.cameras.main.flash(260, 125, 0, 25, false);
+    this.cameras.main.zoomTo(1.055, 1450, 'Sine.easeInOut');
+
+    const finishX = Phaser.Math.Clamp(loser.x - facing * (winner.w + loser.w - 10), 44, GAME_W - 44);
+    this.time.delayedCall(340, () => {
+      this.tweens.add({ targets: winner, x: finishX, duration: 1320, ease: 'Sine.easeInOut' });
+    });
+
+    this.time.delayedCall(1900, () => {
+      this.slowmo = 0.28;
+      winner.special = winner.cfg.special1;
+      winner.specialSlot = 1;
+      winner.specialDone = true;
+      winner.setState('special');
+      SFX.special();
+      this.cameras.main.zoomTo(1.12, 420, 'Sine.easeInOut');
+
+      this.time.delayedCall(520, () => {
+        const groundY = loser.y;
+        const chestY = groundY - loser.cfg.height * 0.58;
+        const body = this.add.image(loser.x, groundY, loser.cfg.id)
+          .setOrigin(0.5, 1).setScale(loser.baseScale).setFlipX(loser.facing === -1).setDepth(7);
+        const spirit = this.add.image(loser.x, groundY, loser.cfg.id)
+          .setOrigin(0.5, 1).setScale(loser.baseScale).setFlipX(loser.facing === -1)
+          .setTint(0xff274c).setAlpha(0.82).setBlendMode(Phaser.BlendModes.ADD).setDepth(11);
+        loser.sprite.setVisible(false);
+        loser.setState('ko');
+
+        SFX.heavyHit();
+        this.cameras.main.flash(170, 255, 35, 70, false);
+        this.cameras.main.shake(620, 0.038);
+        this.shockRing(loser.x, chestY, 0xff1d45);
+        this.impactSprayAt(loser.x, chestY, facing, true);
+        this.impactSprayAt(loser.x, chestY - 12, -facing, true);
+        this.hitPause(240);
+
+        this.tweens.add({ targets: body, y: groundY + 5, angle: -facing * 82, duration: 980, ease: 'Bounce.easeOut' });
+        const spiritX = Phaser.Math.Clamp(winner.x + facing * 34, 40, GAME_W - 40);
+        const spiritY = winner.y - winner.cfg.height - 58;
+        this.tweens.add({
+          targets: spirit, x: spiritX, y: spiritY, scaleX: loser.baseScale * 1.18,
+          scaleY: loser.baseScale * 1.18, angle: facing * 10, duration: 1180, ease: 'Back.easeOut'
+        });
+
+        for (let i = 0; i < 8; i++) {
+          this.time.delayedCall(120 + i * 120, () => {
+            const echo = this.add.image(
+              Phaser.Math.Linear(loser.x, spiritX, i / 8),
+              Phaser.Math.Linear(groundY, spiritY, i / 8),
+              loser.cfg.id
+            ).setOrigin(0.5, 1).setScale(loser.baseScale * (0.72 + i * 0.035))
+              .setFlipX(loser.facing === -1).setTint(i % 2 ? 0xff1744 : 0x8d35ff)
+              .setAlpha(0.2).setBlendMode(Phaser.BlendModes.ADD).setDepth(10);
+            this.tweens.add({ targets: echo, alpha: 0, scaleX: echo.scaleX * 1.18, scaleY: echo.scaleY * 1.18, duration: 620, onComplete: () => echo.destroy() });
+          });
+        }
+
+        this.time.delayedCall(1450, () => {
+          const source = this.textures.get(loser.cfg.id).getSourceImage();
+          const burstX = spirit.x;
+          const burstY = spirit.y - spirit.displayHeight * 0.45;
+          spirit.destroy();
+          SFX.ko();
+          SFX.heavyHit();
+          this.cameras.main.flash(240, 255, 30, 70, false);
+          this.cameras.main.shake(1000, 0.066);
+          this.shockRing(burstX, burstY, 0xff2048);
+          this.sparkAt(burstX, burstY, 0xff3558, 58);
+          this.impactSprayAt(burstX, burstY, facing, true);
+          this.impactSprayAt(burstX, burstY, -facing, true);
+
+          const cols = 3;
+          const rows = 4;
+          const pieceW = Math.ceil(source.width / cols);
+          const pieceH = Math.ceil(source.height / rows);
+          for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+              const shard = this.add.image(burstX, burstY, loser.cfg.id)
+                .setOrigin(0.5).setScale(loser.baseScale * 0.9).setFlipX(loser.facing === -1)
+                .setTint(row % 2 ? 0xff153a : 0x8f38ff).setBlendMode(Phaser.BlendModes.ADD).setDepth(12);
+              shard.setCrop(col * pieceW, row * pieceH, Math.min(pieceW, source.width - col * pieceW), Math.min(pieceH, source.height - row * pieceH));
+              this.tweens.add({
+                targets: shard,
+                x: Phaser.Math.Clamp(burstX + Phaser.Math.Between(-180, 180), 12, GAME_W - 12),
+                y: burstY + Phaser.Math.Between(-150, 150), angle: Phaser.Math.Between(-720, 720),
+                alpha: 0, duration: Phaser.Math.Between(700, 1250), ease: 'Cubic.easeOut',
+                onComplete: () => shard.destroy()
+              });
+            }
+          }
+
+          this.time.delayedCall(480, () => {
+            winner.special = null;
+            winner.setState('win');
+            playVoice(this, 'donp_win');
+          });
+        });
+
+        this.time.delayedCall(3650, () => {
+          this.slowmo = 1;
+          this.cameras.main.zoomTo(1, 340, 'Sine.easeInOut');
+          this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
+          this.tweens.add({ targets: curtain, alpha: 0, duration: 300, onComplete: () => curtain.destroy() });
           this.endMatch(winner, loser);
         });
       });
