@@ -905,12 +905,12 @@ class FightScene extends Phaser.Scene {
 
   afterRound(winner, loser) {
     if (winner.roundsWon >= 2 && winner.cfg.id === 'donp') {
-      let useSoulSnatch = true;
+      let useDropkick = true;
       try {
-        useSoulSnatch = localStorage.getItem('knuck_donp_last_ender') !== 'soul';
-        localStorage.setItem('knuck_donp_last_ender', useSoulSnatch ? 'soul' : 'stomp');
+        useDropkick = localStorage.getItem('knuck_donp_last_ender') !== 'dropkick';
+        localStorage.setItem('knuck_donp_last_ender', useDropkick ? 'dropkick' : 'stomp');
       } catch (_) { /* Storage may be unavailable; default to the new finisher. */ }
-      if (useSoulSnatch) this.startDonPSoulSnatch(winner, loser);
+      if (useDropkick) this.startDonPDropkickFinisher(winner, loser);
       else this.startDonPFinisher(winner, loser);
       return;
     }
@@ -1110,6 +1110,115 @@ class FightScene extends Phaser.Scene {
           this.cameras.main.zoomTo(1, 320, 'Sine.easeInOut');
           this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
           this.tweens.add({ targets: curtain, alpha: 0, duration: 280, onComplete: () => curtain.destroy() });
+          this.endMatch(winner, loser);
+        });
+      });
+    });
+  }
+
+  startDonPDropkickFinisher(winner, loser) {
+    const facing = loser.x >= winner.x ? 1 : -1;
+    winner.facing = facing;
+    loser.facing = -facing;
+    winner.setState('idle');
+    loser.setState('hitstun');
+    loser.hitstun = 9999;
+    stopMusic(this);
+
+    const curtain = this.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, 0x030004, 0).setDepth(9);
+    curtain.setStrokeStyle(4, 0xd40a18, 0.95);
+    this.tweens.add({ targets: curtain, alpha: 0.56, duration: 540, ease: 'Sine.easeOut' });
+    this.centerText.setColor('#ff2b22').setFontSize(46).setScale(1.08);
+    this.bigText('CAREER ENDER', 1850, 'DON P · REDLINE DROPKICK');
+    this.tweens.add({ targets: this.centerText, scaleX: 1.32, scaleY: 1.32, duration: 275, yoyo: true, repeat: 3, ease: 'Sine.easeInOut' });
+    this.cameras.main.flash(240, 130, 0, 0, false);
+    this.cameras.main.zoomTo(1.045, 1400, 'Sine.easeInOut');
+
+    const launchX = Phaser.Math.Clamp(loser.x - facing * 235, 48, GAME_W - 48);
+    this.time.delayedCall(360, () => {
+      this.tweens.add({ targets: winner, x: launchX, duration: 1180, ease: 'Sine.easeInOut' });
+    });
+
+    this.time.delayedCall(1880, () => {
+      this.slowmo = 0.3;
+      SFX.special();
+      this.cameras.main.zoomTo(1.11, 420, 'Sine.easeInOut');
+      this.cameras.main.shake(420, 0.008);
+
+      const kickKey = this.textures.exists('donp_kick') ? 'donp_kick' : 'donp';
+      const kicker = this.add.image(winner.x, winner.y, kickKey)
+        .setOrigin(0.5, 1).setScale(winner.baseScale).setFlipX(facing === -1).setDepth(12);
+      winner.sprite.setVisible(false);
+      const headY = loser.y - loser.cfg.height * 0.82;
+      const impactX = loser.x - facing * 8;
+
+      this.tweens.add({
+        targets: kicker,
+        x: impactX - facing * 12,
+        y: loser.y - loser.cfg.height * 0.42,
+        angle: -facing * 12,
+        duration: 760,
+        ease: 'Cubic.easeIn'
+      });
+
+      for (let i = 0; i < 6; i++) {
+        this.time.delayedCall(170 + i * 90, () => {
+          const trail = this.add.image(kicker.x, kicker.y, kickKey)
+            .setOrigin(0.5, 1).setScale(winner.baseScale).setFlipX(facing === -1)
+            .setTint(i % 2 ? 0xff241d : 0xff9a24).setAlpha(0.22).setDepth(10);
+          this.tweens.add({ targets: trail, alpha: 0, scaleX: trail.scaleX * 1.1, scaleY: trail.scaleY * 1.1, duration: 440, onComplete: () => trail.destroy() });
+        });
+      }
+
+      this.time.delayedCall(760, () => {
+        const victim = this.add.image(loser.x, loser.y, loser.cfg.id)
+          .setOrigin(0.5, 1).setScale(loser.baseScale).setFlipX(loser.facing === -1).setDepth(11);
+        loser.sprite.setVisible(false);
+        loser.setState('ko');
+        SFX.ko();
+        SFX.heavyHit();
+        this.cameras.main.flash(230, 255, 225, 180, false);
+        this.cameras.main.shake(980, 0.067);
+        this.shockRing(impactX, headY, 0xff251d);
+        this.sparkAt(impactX, headY, 0xffd42b, 54);
+        this.impactSprayAt(impactX, headY, facing, true);
+        this.impactSprayAt(impactX, headY - 10, facing, true);
+        this.time.delayedCall(100, () => this.impactSprayAt(impactX + facing * 20, headY, facing, true));
+        this.hitPause(330);
+
+        const crack = this.add.graphics().setDepth(30);
+        crack.lineStyle(4, 0xff4b3f, 0.92);
+        for (let ray = 0; ray < 11; ray++) {
+          const angle = Math.PI * 2 * ray / 11;
+          const radius = 36 + (ray % 3) * 18;
+          crack.lineBetween(impactX, headY, impactX + Math.cos(angle) * radius, headY + Math.sin(angle) * radius);
+        }
+        crack.setAlpha(0);
+        this.tweens.add({ targets: crack, alpha: 1, duration: 100, yoyo: true, hold: 650, onComplete: () => crack.destroy() });
+
+        const exitX = facing > 0 ? GAME_W + victim.displayWidth * 1.4 : -victim.displayWidth * 1.4;
+        this.tweens.add({
+          targets: victim, x: exitX, y: -120, angle: facing * 920,
+          duration: 1750, ease: 'Cubic.easeIn'
+        });
+        this.tweens.add({
+          targets: kicker, x: Phaser.Math.Clamp(impactX + facing * 62, 45, GAME_W - 45),
+          y: winner.y, angle: 0, duration: 920, ease: 'Bounce.easeOut',
+          onComplete: () => {
+            kicker.destroy();
+            winner.x = Phaser.Math.Clamp(impactX + facing * 62, 45, GAME_W - 45);
+            winner.y = GROUND_Y;
+            winner.sprite.setVisible(true);
+            winner.setState('win');
+            playVoice(this, 'donp_win');
+          }
+        });
+
+        this.time.delayedCall(2550, () => {
+          this.slowmo = 1;
+          this.cameras.main.zoomTo(1, 340, 'Sine.easeInOut');
+          this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
+          this.tweens.add({ targets: curtain, alpha: 0, duration: 300, onComplete: () => curtain.destroy() });
           this.endMatch(winner, loser);
         });
       });
