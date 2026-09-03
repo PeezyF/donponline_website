@@ -348,6 +348,14 @@ class Fighter {
         if (t > 980) this.endSpecial();
         break;
 
+      case 'chokethrow':
+        if (t > 180 && !this.specialDone) {
+          this.specialDone = true;
+          S.performChokeThrow(this, opp, d);
+        }
+        if (t > 1250) this.endSpecial();
+        break;
+
       case 'rush': {
         if (t > 140 && t < 420) {
           this.x += this.facing * 620 * (dt / 1000);
@@ -980,6 +988,71 @@ class FightScene extends Phaser.Scene {
         this.tweens.add({ targets: bead, x: bead.x + owner.facing * 35, alpha: 0, duration: 330, onComplete: () => bead.destroy() });
       });
     }
+  }
+
+  performChokeThrow(owner, opp, def) {
+    const dist = Math.abs(opp.x - owner.x);
+    const ahead = (opp.x - owner.x) * owner.facing > 0;
+    const grabReach = owner.w + opp.w + 48;
+    const handX = owner.x + owner.facing * (owner.w + 24);
+    const neckY = opp.y - opp.cfg.height * 0.76;
+
+    if (!ahead || dist > grabReach || opp.airborne || opp.state === 'down' || opp.state === 'ko') {
+      const miss = this.add.rectangle(handX, owner.y - owner.cfg.height * 0.64, 34, 7, def.color, 0.7)
+        .setOrigin(owner.facing > 0 ? 0 : 1, 0.5).setDepth(8);
+      this.tweens.add({ targets: miss, scaleX: 1.5, alpha: 0, duration: 280, onComplete: () => miss.destroy() });
+      return;
+    }
+
+    opp.vx = 0;
+    opp.hitstun = 1500;
+    opp.setState('hitstun');
+    const grabX = owner.x + owner.facing * (owner.w + 30);
+    const liftY = GROUND_Y - 62;
+    const grip = this.add.graphics().setDepth(9);
+    grip.lineStyle(12, 0x40130a, 0.9).lineBetween(owner.x + owner.facing * 10, owner.y - owner.cfg.height * 0.58, grabX, neckY);
+    grip.lineStyle(4, def.color, 0.92).lineBetween(owner.x + owner.facing * 10, owner.y - owner.cfg.height * 0.58, grabX, neckY);
+    const handGlow = this.add.circle(grabX, neckY, 12, def.color, 0.55).setDepth(10);
+
+    SFX.heavyHit();
+    this.cameras.main.shake(260, 0.014);
+    this.sparkAt(grabX, neckY, def.color, 12);
+    this.tweens.add({ targets: opp, x: grabX, y: liftY, duration: 330, ease: 'Back.easeOut' });
+    this.tweens.add({ targets: handGlow, scaleX: 1.3, scaleY: 1.3, alpha: 0.25, duration: 180, yoyo: true, repeat: 2 });
+
+    this.time.delayedCall(350, () => {
+      this.cameras.main.zoomTo(1.075, 220, 'Sine.easeInOut');
+      this.cameras.main.shake(380, 0.01);
+      for (let i = 0; i < 12; i++) {
+        const strain = this.add.rectangle(grabX + Phaser.Math.Between(-8, 8), neckY + Phaser.Math.Between(-8, 8), 3, 3, i % 2 ? 0xffd05a : def.color, 0.9).setDepth(11);
+        this.tweens.add({ targets: strain, x: strain.x + Phaser.Math.Between(-35, 35), y: strain.y - Phaser.Math.Between(10, 45), alpha: 0, duration: 390, onComplete: () => strain.destroy() });
+      }
+    });
+
+    this.time.delayedCall(650, () => {
+      grip.destroy();
+      handGlow.destroy();
+      const throwX = Phaser.Math.Clamp(owner.x + owner.facing * 205, 36, GAME_W - 36);
+      SFX.heavyHit();
+      this.cameras.main.flash(120, 255, 150, 55, false);
+      this.cameras.main.shake(560, 0.032);
+      this.sparkAt(grabX, neckY, 0xffd24a, 24);
+      this.impactSprayAt(grabX, neckY, owner.facing, true);
+      this.hitPause(150);
+      this.tweens.add({
+        targets: opp, x: throwX, y: GROUND_Y - 72,
+        duration: 330, ease: 'Cubic.easeOut',
+        onComplete: () => {
+          opp.y = GROUND_Y;
+          opp.sprite.setAngle(0);
+          opp.takeHit(def.dmg * owner.cfg.dmg, 430 * owner.facing / opp.cfg.weight, owner, { knockdown: true, unblockable: true });
+          this.cameras.main.shake(620, 0.038);
+          this.shockRing(opp.x, GROUND_Y - 8, def.color);
+          this.sparkAt(opp.x, GROUND_Y - 8, 0xd09a54, 20);
+          this.boneDustAt(opp.x, GROUND_Y - 5, 14, owner.facing);
+        }
+      });
+    });
   }
 
   spawnAssist(owner, def) {

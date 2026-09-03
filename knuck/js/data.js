@@ -30,7 +30,8 @@ const CHARACTERS = [
     id: 'pastortroy', name: 'PASTOR TROY',
     height: 164, health: 105, speed: 160, jump: 520, weight: 1.1, dmg: 1.1,
     special1: { name: 'DSGB QUAKE', type: 'area', color: 0xff6622, dmg: 14, shake: true },
-    special2: { name: 'CONGREGATION SLAM', type: 'rush', color: 0xffee44, dmg: 17 }
+    special2: { name: 'CONGREGATION SLAM', type: 'rush', color: 0xffee44, dmg: 17 },
+    special3: { name: 'CHOKE THROW', type: 'chokethrow', color: 0xff5a24, dmg: 19 }
   },
   {
     id: 'bonecrusher', name: 'BONE CRUSHER',
