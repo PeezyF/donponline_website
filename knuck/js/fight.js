@@ -340,6 +340,14 @@ class Fighter {
         if (t > 920) this.endSpecial();
         break;
 
+      case 'dreadwhip':
+        if (t > 220 && !this.specialDone) {
+          this.specialDone = true;
+          S.fireDreadWhip(this, opp, d);
+        }
+        if (t > 980) this.endSpecial();
+        break;
+
       case 'rush': {
         if (t > 140 && t < 420) {
           this.x += this.facing * 620 * (dt / 1000);
@@ -905,6 +913,73 @@ class FightScene extends Phaser.Scene {
     this.tweens.add({ targets: [beam, eyeGlow, eyeCore], alpha: 0, duration: 360, delay: 170, onComplete: () => {
       beam.destroy(); eyeGlow.destroy(); eyeCore.destroy();
     }});
+  }
+
+  fireDreadWhip(owner, opp, def) {
+    const rootX = owner.x - owner.facing * 2;
+    const rootY = owner.y - owner.cfg.height * 0.83;
+    const maxReach = 245;
+    const whip = this.add.graphics().setDepth(9);
+    const motion = { p: 0 };
+    let hitLanded = false;
+
+    SFX.special();
+    this.cameras.main.shake(220, 0.008);
+    this.tweens.add({
+      targets: motion,
+      p: 1,
+      duration: 410,
+      ease: 'Cubic.easeOut',
+      yoyo: true,
+      hold: 100,
+      onUpdate: () => {
+        whip.clear();
+        const extension = Math.sin(motion.p * Math.PI * 0.5);
+        const reach = maxReach * extension;
+        for (let strand = 0; strand < 6; strand++) {
+          const offsetY = (strand - 2.5) * 4;
+          const points = 12;
+          whip.lineStyle(strand % 2 ? 5 : 4, strand % 2 ? 0x24130b : 0x080605, 0.98);
+          whip.beginPath();
+          whip.moveTo(rootX, rootY + offsetY);
+          for (let i = 1; i <= points; i++) {
+            const q = i / points;
+            const wave = Math.sin(q * Math.PI * 2.4 + strand * 0.72 + motion.p * 3.2) * (12 + strand * 1.5) * q;
+            whip.lineTo(rootX + owner.facing * reach * q, rootY + offsetY + wave);
+          }
+          whip.strokePath();
+          whip.lineStyle(1, def.color, 0.78);
+          whip.strokePath();
+        }
+        const tipX = rootX + owner.facing * reach;
+        const tipY = rootY + Math.sin(Math.PI * 2.4 + motion.p * 3.2) * 14;
+        whip.fillStyle(0xffd75c, 0.95).fillCircle(tipX, tipY, 4);
+
+        if (!hitLanded && motion.p > 0.78) {
+          const ahead = (opp.x - owner.x) * owner.facing > 0;
+          const dist = Math.abs(opp.x - owner.x);
+          if (ahead && dist <= maxReach + opp.w) {
+            hitLanded = true;
+            const hitY = opp.y - opp.cfg.height * 0.68;
+            opp.takeHit(def.dmg * owner.cfg.dmg, -220 * owner.facing / opp.cfg.weight, owner, { stun: 520 });
+            this.cameras.main.flash(100, 255, 190, 45, false);
+            this.cameras.main.shake(440, 0.026);
+            this.sparkAt(opp.x, hitY, 0xffd24c, 24);
+            this.impactSprayAt(opp.x, hitY, owner.facing, true);
+            this.shockRing(opp.x, hitY, def.color);
+            this.hitPause(120);
+          }
+        }
+      },
+      onComplete: () => whip.destroy()
+    });
+
+    for (let i = 0; i < 8; i++) {
+      this.time.delayedCall(90 + i * 45, () => {
+        const bead = this.add.circle(rootX + owner.facing * (45 + i * 22), rootY + Phaser.Math.Between(-13, 13), 3, i % 2 ? 0xffd85e : 0x8b5d19, 0.9).setDepth(10);
+        this.tweens.add({ targets: bead, x: bead.x + owner.facing * 35, alpha: 0, duration: 330, onComplete: () => bead.destroy() });
+      });
+    }
   }
 
   spawnAssist(owner, def) {

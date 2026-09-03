@@ -17,7 +17,8 @@ const CHARACTERS = [
     id: 'liljon', name: 'LIL JON',
     height: 158, health: 100, speed: 165, jump: 540, weight: 1.0, dmg: 1.05,
     special1: { name: 'WHAT?! WAVE', type: 'projectile', color: 0x33ddff, dmg: 13 },
-    special2: { name: 'CRUNK JUICE', type: 'area', color: 0xbb44ff, dmg: 8, stun: 1200 }
+    special2: { name: 'CRUNK JUICE', type: 'area', color: 0xbb44ff, dmg: 8, stun: 1200 },
+    special3: { name: 'DRED WHIP', type: 'dreadwhip', color: 0xd8a43b, dmg: 17 }
   },
   {
     id: 'scrappy', name: 'LIL SCRAPPY',
