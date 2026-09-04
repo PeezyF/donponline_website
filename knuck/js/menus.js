@@ -108,7 +108,8 @@ function buildTouchControls(scene) {
   };
 
   // Layered arcade joystick with a moving shaft and glossy ball top.
-  const joyX = 100, joyY = GAME_H - 60, joyRadius = 56, maxTravel = 34, deadZone = 11;
+  const joyX = 100, joyY = GAME_H - 60, joyRadius = 56, maxTravel = 34;
+  const moveDeadZone = 14, downThreshold = 18, jumpThreshold = 27;
   const joyShadow = scene.add.ellipse(joyX, joyY + 8, 120, 102, 0x000000, 0.62).setDepth(27).setScrollFactor(0);
   const joyBase = scene.add.circle(joyX, joyY, joyRadius, 0x11111c, 0.94)
     .setStrokeStyle(4, 0xffd85a, 0.9).setDepth(28).setScrollFactor(0);
@@ -138,9 +139,13 @@ function buildTouchControls(scene) {
   setJoystickVisual(0, 0);
 
   let joystickPointer = null;
+  let jumpLatched = false;
+  let jumpPulseId = 0;
   const clearDirections = () => {
     scene.touchState.left = scene.touchState.right = false;
     scene.touchState.up = scene.touchState.down = false;
+    jumpLatched = false;
+    jumpPulseId++;
   };
   const moveJoystick = pointer => {
     let dx = pointer.x - joyX, dy = pointer.y - joyY;
@@ -150,10 +155,25 @@ function buildTouchControls(scene) {
       dy *= maxTravel / distance;
     }
     setJoystickVisual(dx, dy);
-    scene.touchState.left = dx < -deadZone;
-    scene.touchState.right = dx > deadZone;
-    scene.touchState.up = dy < -deadZone;
-    scene.touchState.down = dy > deadZone;
+    scene.touchState.left = dx < -moveDeadZone;
+    scene.touchState.right = dx > moveDeadZone;
+    scene.touchState.down = dy > downThreshold;
+
+    // Jump only after a deliberate, mostly vertical push near the top of the
+    // stick. Emit a short pulse and latch it until the stick leaves that zone,
+    // preventing accidental or repeated jumps while a thumb is held there.
+    const wantsJump = dy < -jumpThreshold && Math.abs(dy) > Math.abs(dx) * 1.15;
+    if (wantsJump && !jumpLatched) {
+      jumpLatched = true;
+      scene.touchState.up = true;
+      const pulseId = ++jumpPulseId;
+      scene.time.delayedCall(95, () => {
+        if (pulseId === jumpPulseId) scene.touchState.up = false;
+      });
+    } else if (!wantsJump) {
+      jumpLatched = false;
+      scene.touchState.up = false;
+    }
   };
   const releaseJoystick = pointer => {
     if (joystickPointer !== null && (!pointer || pointer.id === joystickPointer)) {
@@ -252,7 +272,7 @@ class TitleScene extends Phaser.Scene {
   create() {
     this.add.image(GAME_W / 2, GAME_H / 2, 'opening1').setDisplaySize(GAME_W, GAME_H);
     const press = this.add.text(GAME_W / 2, GAME_H * 0.86, isTouch() ? 'TAP TO START' : 'PRESS START', { fontFamily: 'monospace', fontSize: '18px', color: '#ffffff', stroke: '#000', strokeThickness: 4, fontStyle: 'bold' }).setOrigin(0.5);
-    this.add.text(GAME_W - 6, GAME_H - 6, 'v4.5', { fontFamily: 'monospace', fontSize: '10px', color: '#ffe066', stroke: '#000', strokeThickness: 2 }).setOrigin(1, 1);
+    this.add.text(GAME_W - 6, GAME_H - 6, 'v4.6', { fontFamily: 'monospace', fontSize: '10px', color: '#ffe066', stroke: '#000', strokeThickness: 2 }).setOrigin(1, 1);
     this.tweens.add({ targets: press, alpha: 0.15, yoyo: true, repeat: -1, duration: 550 });
     const go = () => { unlockAudio(); SFX.confirm(); this.scene.start('ModeSelect'); };
     this.input.keyboard.once('keydown', go);
