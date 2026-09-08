@@ -1,13 +1,15 @@
-# BUCK! — A-Town Throwdown (playable prototype)
+# KNUCK! — A-Town Throwdown · Season 2 (v5.0)
 
-16-bit style 2D fighter. 9 fighters, 5 Atlanta stages, your beats.
+16-bit style 2D fighter. 18 fighters, 10 Atlanta stages, your beats.
+
+See [Season 2 release notes](SEASON2.md) for the expansion roster, asset processing, and validation.
 
 ## RUN IT
 
 The game must be served over HTTP (browsers block local audio/images from `file://`).
 
 ```
-cd buck
+cd knuck
 python3 -m http.server 8000
 ```
 
@@ -37,7 +39,7 @@ Open **http://localhost:8000** in Chrome/Firefox/Edge. Needs internet once (Phas
 - **VS CPU** — solo fight vs the computer: pick your fighter, pick the CPU opponent, pick a stage.
 - **2 PLAYERS** — versus on one keyboard or two gamepads, best of 3.
 - **COMBO BREAKER** — after eating 3 hits in a row, hold BLOCK to break out, hop back and get brief invulnerability (flicker).
-- **ARCADE TOWER** — fight all 8 other fighters, rising AI difficulty, random stages, champion screen.
+- **ARCADE TOWER** — fight all 17 other fighters, rising AI difficulty, random stages, champion screen.
 - **TRAINING** — dummy + floating damage numbers for balance testing.
 
 ## ADDING VOICE AD-LIBS (no coding needed)

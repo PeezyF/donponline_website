@@ -64,7 +64,51 @@ const CHARACTERS = [
     height: 158, health: 100, speed: 180, jump: 560, weight: 0.95, dmg: 0.95,
     special1: { name: 'BEAT DROP', type: 'area', color: 0xff8822, dmg: 14, shake: true },
     special2: { name: 'LEAN WIT IT', type: 'rush', color: 0x4488ff, dmg: 15 }
-  }
+  },
+  { id: 'souljaboy', name: 'SOULJA BOY',
+    height: 158, health: 100, speed: 190, jump: 570, weight: 0.9, dmg: 0.95,
+    special1: { name: 'SUPERMAN THAT', type: 'rush', color: 0x3366ff, dmg: 16 },
+    special2: { name: 'YAHHH! TRICK', type: 'projectile', color: 0xffdd33, dmg: 12 } },
+
+  { id: 'djunk', name: 'DJ UNK',
+    height: 158, health: 100, speed: 180, jump: 550, weight: 1.0, dmg: 1.0,
+    special1: { name: 'WALK IT OUT', type: 'rush', color: 0x66dd44, dmg: 15 },
+    special2: { name: '2 STEP', type: 'uppercut', color: 0xaa44ff, dmg: 14 } },
+
+  { id: 'fabo', name: 'FABO',
+    height: 156, health: 95, speed: 195, jump: 580, weight: 0.85, dmg: 0.95,
+    special1: { name: 'LAFFY TAFFY', type: 'projectile', color: 0xff66bb, dmg: 11 },
+    special2: { name: 'BEAM ME UP SCOTTY', type: 'rush', color: 0x44ff99, dmg: 15 } },
+
+  { id: 'parlay', name: 'PARLAY',
+    height: 158, health: 100, speed: 175, jump: 550, weight: 1.0, dmg: 1.0,
+    special1: { name: 'WHITE TEE', type: 'projectile', color: 0xddeeff, dmg: 9, slow: 2500 },
+    special2: { name: 'THEY LIKE ME', type: 'area', color: 0xffcc33, dmg: 9, stun: 1200 } },
+
+  { id: 'guccimane', name: 'GUCCI MANE',
+    height: 162, health: 105, speed: 165, jump: 530, weight: 1.1, dmg: 1.05,
+    special1: { name: 'BRRR!', type: 'projectile', color: 0x66ccff, dmg: 12, slow: 2500 },
+    special2: { name: 'ICE CREAM CONE', type: 'uppercut', color: 0xffaadd, dmg: 15 } },
+
+  { id: 'jeezy', name: 'YOUNG JEEZY',
+    height: 160, health: 105, speed: 170, jump: 540, weight: 1.05, dmg: 1.1,
+    special1: { name: 'SNOWMAN STORM', type: 'area', color: 0xeeeeff, dmg: 14, shake: true },
+    special2: { name: 'TRAP OR DIE', type: 'rush', color: 0xcc2222, dmg: 17 } },
+
+  { id: 'ti', name: 'T.I.',
+    height: 158, health: 100, speed: 185, jump: 560, weight: 0.95, dmg: 1.0,
+    special1: { name: 'RUBBER BAND MAN', type: 'projectile', color: 0x88ee44, dmg: 12 },
+    special2: { name: 'KING OF THE SOUTH', type: 'area', color: 0xffcc22, dmg: 15, shake: true } },
+
+  { id: 'shawtylo', name: 'SHAWTY LO',
+    height: 158, health: 100, speed: 175, jump: 545, weight: 1.05, dmg: 1.05,
+    special1: { name: 'DEY KNOW', type: 'projectile', color: 0xff8833, dmg: 12 },
+    special2: { name: 'DUNN DUNN', type: 'area', color: 0xcc7733, dmg: 15, shake: true } },
+
+  { id: 'nuface', name: 'NUFACE',
+    height: 158, health: 100, speed: 175, jump: 550, weight: 1.0, dmg: 0.95,
+    special1: { name: 'SIGN THIS!', type: 'projectile', color: 0xffdd66, dmg: 10, stun: 1100 },
+    special2: { name: 'NUFACE WAS THERE', type: 'area', color: 0xff8822, dmg: 14, shake: true } }
 ];
 
 const STAGES = [
@@ -72,7 +116,12 @@ const STAGES = [
   { id: 'magiccity',  name: 'MAGIC CITY',      music: 'beat3' },
   { id: 'trapmuseum', name: 'TRAP MUSEUM',     music: 'beat4' },
   { id: 'cascade',    name: 'CASCADE RINK',    music: 'beat5' },
-  { id: 'parkinglot', name: 'THE PARKING LOT', music: 'beat6' }
+  { id: 'parkinglot', name: 'THE PARKING LOT', music: 'beat6' },
+  { id: 'southdekalb', name: 'SOUTH DEKALB MALL', music: 'beat7' },
+  { id: 'crucial', name: 'CLUB CRUCIAL', music: 'beat8' },
+  { id: 'benzstadium', name: 'MERCEDES-BENZ STADIUM', music: 'beat9' },
+  { id: 'bankhead', name: 'BANKHEAD SEAFOOD', music: 'beat10' },
+  { id: 'underground', name: 'UNDERGROUND ATLANTA', music: 'beat7' }
 ];
 
 // Universal moveset frame data (ms) - shared by every fighter

@@ -2,6 +2,17 @@
 // BUCK! - MENU SCENES + shared helpers
 // ============================================================
 
+function gridMove(idx, dx, dy, cols, count) {
+  const rows = Math.ceil(count / cols);
+  let x = idx % cols, y = Math.floor(idx / cols);
+  for (let n = 0; n < Math.max(cols, rows); n++) {
+    x = (x + dx + cols) % cols;
+    y = (y + dy + rows) % rows;
+    if (y * cols + x < count) return y * cols + x;
+  }
+  return idx;
+}
+
 function isTouch() { return ('ontouchstart' in window) || navigator.maxTouchPoints > 0; }
 
 // ---- gamepad edge detection for menu navigation ----
@@ -257,6 +268,7 @@ class BootScene extends Phaser.Scene {
     this.load.audio('beat4', 'assets/music/beat4.ogg');
     this.load.audio('beat5', 'assets/music/beat5.ogg');
     this.load.audio('beat6', 'assets/music/beat6.ogg');
+    for (let i = 7; i <= 10; i++) this.load.audio('beat' + i, 'assets/music/beat' + i + '.ogg');
     // digitized close-up portraits (optional per character - missing files are skipped)
     for (const c of CHARACTERS) this.load.image('port_' + c.id, 'assets/portraits/' + c.id + '.png');
     // optional voice slots - missing files are fine
@@ -272,7 +284,7 @@ class TitleScene extends Phaser.Scene {
   create() {
     this.add.image(GAME_W / 2, GAME_H / 2, 'opening1').setDisplaySize(GAME_W, GAME_H);
     const press = this.add.text(GAME_W / 2, GAME_H * 0.86, isTouch() ? 'TAP TO START' : 'PRESS START', { fontFamily: 'monospace', fontSize: '18px', color: '#ffffff', stroke: '#000', strokeThickness: 4, fontStyle: 'bold' }).setOrigin(0.5);
-    this.add.text(GAME_W - 6, GAME_H - 6, 'v4.6', { fontFamily: 'monospace', fontSize: '10px', color: '#ffe066', stroke: '#000', strokeThickness: 2 }).setOrigin(1, 1);
+    this.add.text(GAME_W - 6, GAME_H - 6, 'v5.0 · SEASON 2', { fontFamily: 'monospace', fontSize: '10px', color: '#ffe066', stroke: '#000', strokeThickness: 2 }).setOrigin(1, 1);
     this.tweens.add({ targets: press, alpha: 0.15, yoyo: true, repeat: -1, duration: 550 });
     const go = () => { unlockAudio(); SFX.confirm(); this.scene.start('ModeSelect'); };
     this.input.keyboard.once('keydown', go);
@@ -350,20 +362,27 @@ class CharSelectScene extends Phaser.Scene {
     this.frameR = this.add.rectangle(PX_R, P_Y, PF_W + 8, PF_H + 8, 0x0a0a1a, 0.7).setStrokeStyle(3, 0x5588ff);
     this.portraitL = this.add.image(PX_L, P_Y, CHARACTERS[0].id);
     this.portraitR = this.add.image(PX_R, P_Y, CHARACTERS[0].id).setVisible(false);
-    this.nameL = this.add.text(PX_L, P_Y + PF_H / 2 + 14, '', { fontFamily: 'monospace', fontSize: '12px', color: '#ffffff', stroke: '#000', strokeThickness: 3, fontStyle: 'bold' }).setOrigin(0.5);
-    this.nameR = this.add.text(PX_R, P_Y + PF_H / 2 + 14, '', { fontFamily: 'monospace', fontSize: '12px', color: '#ffffff', stroke: '#000', strokeThickness: 3, fontStyle: 'bold' }).setOrigin(0.5);
+    this.nameL = this.add.text(PX_L, P_Y - PF_H / 2 - 12, '', { fontFamily: 'monospace', fontSize: '12px', color: '#ffffff', stroke: '#000', strokeThickness: 3, fontStyle: 'bold' }).setOrigin(0.5);
+    this.nameR = this.add.text(PX_R, P_Y - PF_H / 2 - 12, '', { fontFamily: 'monospace', fontSize: '12px', color: '#ffffff', stroke: '#000', strokeThickness: 3, fontStyle: 'bold' }).setOrigin(0.5);
     this.frameR.setVisible(this.mode === 'vs' || this.mode === 'vscpu');
 
     // ---- grid, centered between the portraits ----
-    const cols = 3, cw = 92, ch = 84;
-    const ox = GAME_W / 2 - cw, oy = 76;
+    const cols = 3, cw = 92, rows = Math.ceil(CHARACTERS.length / cols);
+    const ch = Math.min(84, 276 / rows);
+    const ox = GAME_W / 2 - cw, oy = 44 + ch / 2;
     this.cells = [];
     CHARACTERS.forEach((c, i) => {
       const x = ox + (i % cols) * cw, y = oy + Math.floor(i / cols) * ch;
-      const frame = this.add.rectangle(x, y, 84, 76, 0x111122, 0.85).setStrokeStyle(2, 0x555577);
-      const img = this.add.image(x, y + 33, c.id).setOrigin(0.5, 1);
-      const sc = 64 / this.textures.get(c.id).getSourceImage().height;
-      img.setScale(sc);
+      const frame = this.add.rectangle(x, y, 84, ch - 6, 0x111122, 0.85).setStrokeStyle(2, 0x555577);
+      const portraitKey = 'port_' + c.id;
+      const key = this.textures.exists(portraitKey) ? portraitKey : c.id;
+      const img = this.add.image(x - 24, y, key);
+      const source = this.textures.get(key).getSourceImage();
+      img.setScale(Math.min((ch - 10) / source.height, 29 / source.width));
+      this.add.text(x + 15, y, c.name, {
+        fontFamily: 'monospace', fontSize: '7px', color: '#ffffff',
+        fontStyle: 'bold', align: 'center', wordWrap: { width: 44 }
+      }).setOrigin(0.5);
       frame.setInteractive();
       this.cells.push({ frame, c, i });
       frame.on('pointerdown', () => { if (this.locked) return; if (this.turn === 1) this.p1idx = i; else this.p2idx = i; this.paint(); this.pick(this.turn, i); });
@@ -431,9 +450,9 @@ class CharSelectScene extends Phaser.Scene {
     });
     objects.push(pick, pickText);
 
-    const back = this.add.rectangle(48, 22, 78, 28, 0x11111b, 0.92)
+    const back = this.add.rectangle(48, GAME_H - 16, 78, 28, 0x11111b, 0.92)
       .setStrokeStyle(2, 0xffe066, 0.85).setDepth(30).setScrollFactor(0).setInteractive();
-    const backText = this.add.text(48, 22, '← BACK', {
+    const backText = this.add.text(48, GAME_H - 16, '← BACK', {
       fontFamily: 'monospace', fontSize: '11px', color: '#ffffff', fontStyle: 'bold'
     }).setOrigin(0.5).setDepth(31).setScrollFactor(0);
     back.on('pointerdown', (pointer, localX, localY, event) => {
@@ -568,9 +587,7 @@ class CharSelectScene extends Phaser.Scene {
   }
 
   idxMove(idx, dx, dy) {
-    let cx = idx % 3, cy = Math.floor(idx / 3);
-    cx = (cx + dx + 3) % 3; cy = (cy + dy + 3) % 3;
-    return cy * 3 + cx;
+    return gridMove(idx, dx, dy, 3, CHARACTERS.length);
   }
 }
 
@@ -582,21 +599,23 @@ class StageSelectScene extends Phaser.Scene {
     this.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, 0x0a0a18);
     this.add.text(GAME_W / 2, 26, 'SELECT STAGE', { fontFamily: 'monospace', fontSize: '18px', color: '#ffe066', stroke: '#000', strokeThickness: 4, fontStyle: 'bold' }).setOrigin(0.5);
     this.idx = 0;
-    // big thumbnails, 2 rows: 3 + 2
-    const positions = [
-      [140, 120], [320, 120], [500, 120],
-      [230, 246], [410, 246]
-    ];
+    this.cols = STAGES.length > 9 ? 4 : 3;
+    const rows = Math.ceil(STAGES.length / this.cols);
+    const cellW = 584 / this.cols, cellH = Math.min(116, 246 / rows);
+    const thumbW = Math.min(cellW - 12, (cellH - 12) * 16 / 9), thumbH = thumbW * 9 / 16;
     this.thumbs = STAGES.map((s, i) => {
-      const [x, y] = positions[i];
-      const img = this.add.image(x, y, s.id).setDisplaySize(164, 92).setInteractive();
-      const fr = this.add.rectangle(x, y, 170, 98).setStrokeStyle(3, 0x555577);
+      const row = Math.floor(i / this.cols);
+      const rowCount = Math.min(this.cols, STAGES.length - row * this.cols);
+      const x = GAME_W / 2 + (i % this.cols - (rowCount - 1) / 2) * cellW;
+      const y = 54 + cellH / 2 + row * cellH;
+      const img = this.add.image(x, y, s.id).setDisplaySize(thumbW, thumbH).setInteractive();
+      const fr = this.add.rectangle(x, y, thumbW + 6, thumbH + 6).setStrokeStyle(3, 0x555577);
       img.on('pointerdown', () => { this.idx = i; this.go(); });
       return { img, fr, s };
     });
     this.nameText = this.add.text(GAME_W / 2, GAME_H - 34, '', { fontFamily: 'monospace', fontSize: '16px', color: '#ffffff', stroke: '#000', strokeThickness: 4, fontStyle: 'bold' }).setOrigin(0.5);
     const K = Phaser.Input.Keyboard.KeyCodes;
-    this.keys = this.input.keyboard.addKeys({ left: K.A, right: K.D, l2: K.LEFT, r2: K.RIGHT, ok: K.F, ok2: K.K, enter: K.ENTER });
+    this.keys = this.input.keyboard.addKeys({ left: K.A, right: K.D, l2: K.LEFT, r2: K.RIGHT, up: K.W, down: K.S, u2: K.UP, d2: K.DOWN, back: K.ESC, ok: K.F, ok2: K.K, enter: K.ENTER });
     this.paint();
   }
   paint() {
@@ -613,6 +632,9 @@ class StageSelectScene extends Phaser.Scene {
     const pe = padEdges(this, -1, 'stage');
     if (Phaser.Input.Keyboard.JustDown(k.left) || Phaser.Input.Keyboard.JustDown(k.l2) || pe.left) { this.idx = (this.idx + STAGES.length - 1) % STAGES.length; SFX.select(); this.paint(); }
     if (Phaser.Input.Keyboard.JustDown(k.right) || Phaser.Input.Keyboard.JustDown(k.r2) || pe.right) { this.idx = (this.idx + 1) % STAGES.length; SFX.select(); this.paint(); }
+    if (Phaser.Input.Keyboard.JustDown(k.up) || Phaser.Input.Keyboard.JustDown(k.u2) || pe.up) { this.idx = gridMove(this.idx, 0, -1, this.cols, STAGES.length); SFX.select(); this.paint(); }
+    if (Phaser.Input.Keyboard.JustDown(k.down) || Phaser.Input.Keyboard.JustDown(k.d2) || pe.down) { this.idx = gridMove(this.idx, 0, 1, this.cols, STAGES.length); SFX.select(); this.paint(); }
+    if (Phaser.Input.Keyboard.JustDown(k.back)) { this.scene.start('CharSelect', { mode: this.params.mode, aiLevel: this.params.aiLevel }); return; }
     if (Phaser.Input.Keyboard.JustDown(k.ok) || Phaser.Input.Keyboard.JustDown(k.ok2) || Phaser.Input.Keyboard.JustDown(k.enter) || pe.ok) this.go();
   }
 }
@@ -643,10 +665,12 @@ class LadderScene extends Phaser.Scene {
     // ladder list, next opponent highlighted
     for (let i = 0; i < L.opponents.length; i++) {
       const c = CHARACTERS.find(x => x.id === L.opponents[i]);
-      const y = GAME_H - 60 - i * 28;
+      const rows = Math.ceil(L.opponents.length / 2);
+      const x = i < rows ? 165 : 475;
+      const y = 66 + (i % rows) * 21;
       const isNext = i === L.stage;
       const done = i < L.stage;
-      this.add.text(GAME_W / 2, y, (done ? '[X] ' : isNext ? '>>> ' : '    ') + c.name,
+      this.add.text(x, y, (done ? '[X] ' : isNext ? '>>> ' : '    ') + c.name,
         { fontFamily: 'monospace', fontSize: isNext ? '15px' : '12px', color: done ? '#557755' : isNext ? '#ffcc22' : '#aaaacc', stroke: '#000', strokeThickness: 3, fontStyle: isNext ? 'bold' : 'normal' }).setOrigin(0.5);
     }
 
@@ -659,6 +683,6 @@ class LadderScene extends Phaser.Scene {
       });
     };
     const opts = [[this.result === 'lose' ? 'RETRY' : 'FIGHT', fight], ['GIVE UP', () => this.scene.start('ModeSelect')]];
-    buildMenuPanel(this, 'NEXT: ' + CHARACTERS.find(x => x.id === L.opponents[L.stage]).name, opts);
+    buildMenuPanel(this, 'NEXT: ' + CHARACTERS.find(x => x.id === L.opponents[L.stage]).name, opts, 294, 32);
   }
 }
