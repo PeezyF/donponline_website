@@ -1309,6 +1309,10 @@ class FightScene extends Phaser.Scene {
       this.startDjMontayFinisher(winner, loser);
       return;
     }
+    if (winner.roundsWon >= 2 && winner.cfg.id === 'guccimane') {
+      this.startGucciManeFinisher(winner, loser);
+      return;
+    }
     if (winner.roundsWon >= 2 && winner.cfg.id === 'nuface') {
       this.startNuFaceFinisher(winner, loser);
       return;
@@ -2526,6 +2530,87 @@ class FightScene extends Phaser.Scene {
     });
   }
 
+  startGucciManeFinisher(winner, loser) {
+    const facing = loser.x >= winner.x ? 1 : -1;
+    winner.facing = facing;
+    loser.facing = -facing;
+    winner.setState('idle');
+    loser.setState('ko');
+    loser.sprite.setVisible(false);
+    this.slowmo = 1;
+    stopMusic(this);
+    const curtain = this.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, 0x051012, 0.62).setDepth(5);
+    const source = this.textures.get(loser.cfg.id).getSourceImage();
+    const height = source.height * loser.baseScale;
+    const victim = this.add.image(loser.x, loser.y, loser.cfg.id).setOrigin(0.5, 1)
+      .setScale(loser.baseScale).setFlipX(loser.facing === -1).setDepth(9);
+    const faceY = loser.y - height * 0.91;
+    this.centerText.setColor('#eaffff').setFontSize(46);
+    this.bigText('CAREER ENDER', 2200, 'GUCCI MANE · POWDER MELTDOWN');
+    this.cameras.main.zoomTo(1.06, 2200, 'Sine.easeOut');
+    const throwX = Phaser.Math.Clamp(loser.x - facing * 125, 40, GAME_W - 40);
+    this.tweens.add({ targets: winner, x: throwX, delay: 450, duration: 1550, ease: 'Sine.easeInOut' });
+    this.time.delayedCall(2600, () => {
+      winner.special = winner.cfg.special1;
+      winner.specialSlot = 1;
+      winner.specialDone = true;
+      winner.setState('special');
+      playVoice(this, 'guccimane_s1');
+      SFX.special();
+      const cloud = this.add.container(winner.x + facing * 25, winner.y - winner.cfg.height * 0.65).setDepth(12);
+      // Fine white grains and soft overlapping puffs make the thrown powder readable.
+      for (let i = 0; i < 30; i++) {
+        const a = i * 2.4;
+        const r = 3 + (i % 7) * 2;
+        cloud.add(this.add.circle(Math.cos(a) * r, Math.sin(a) * r * 0.6,
+          i % 3 === 0 ? 6 : 2, 0xffffff, i % 3 === 0 ? 0.32 : 0.95));
+      }
+      this.tweens.add({ targets: cloud, x: loser.x, y: faceY, scaleX: 1.6, scaleY: 1.6,
+        duration: 1100, ease: 'Sine.easeInOut', onComplete: () => {
+          SFX.heavyHit();
+          this.cameras.main.flash(180, 225, 255, 255, false);
+          this.cameras.main.shake(450, 0.012);
+          this.cameras.main.zoomTo(1.1, 4200, 'Sine.easeInOut');
+          this.sparkAt(loser.x, faceY, 0xffffff, 20);
+          victim.setTint(0xe3ffff);
+          this.tweens.add({ targets: cloud, scaleX: 3, scaleY: 2.4, alpha: 0,
+            delay: 650, duration: 2400, onComplete: () => cloud.destroy() });
+          const puddle = this.add.ellipse(loser.x, loser.y - 2, 40, 10, 0xafd9cb, 0.85)
+            .setStrokeStyle(2, 0xe7fff7, 0.8).setDepth(8).setScale(0.2);
+          // Hold the reaction before the slow collapse; keep the feet anchored throughout.
+          this.tweens.add({ targets: victim, scaleX: loser.baseScale * 1.18, scaleY: loser.baseScale * 0.93,
+            delay: 500, duration: 180, yoyo: true, repeat: 3 });
+          for (let i = 0; i < 30; i++) {
+            this.time.delayedCall(1500 + i * 150, () => {
+              const progress = i / 30;
+              const drip = this.add.ellipse(loser.x + Math.sin(i * 2.4) * (18 + progress * 24),
+                loser.y - height * (0.82 - progress * 0.64), 5 + i % 4, 13, 0xd9f5e9, 0.9).setDepth(10);
+              this.tweens.add({ targets: drip, y: loser.y - 3, scaleY: 0.25, scaleX: 2, alpha: 0,
+                duration: 850, ease: 'Quad.easeIn', onComplete: () => drip.destroy() });
+            });
+          }
+          this.time.delayedCall(2200, () => {
+            winner.special = null;
+            winner.setState('win');
+            this.tweens.add({ targets: puddle, scaleX: 3.5, scaleY: 1.6, duration: 4400, ease: 'Sine.easeInOut' });
+            this.tweens.add({ targets: victim, scaleX: loser.baseScale * 1.9, scaleY: loser.baseScale * 0.025,
+              alpha: 0.25, duration: 4400, ease: 'Sine.easeInOut', onComplete: () => {
+                victim.destroy();
+                SFX.ko();
+                playVoice(this, 'guccimane_win');
+                this.cameras.main.shake(220, 0.009);
+                this.time.delayedCall(1800, () => {
+                  this.cameras.main.zoomTo(1, 650, 'Sine.easeOut');
+                  this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
+                  this.tweens.add({ targets: curtain, alpha: 0, duration: 300, onComplete: () => curtain.destroy() });
+                  this.endMatch(winner, loser);
+                });
+              } });
+          });
+        } });
+    });
+  }
+
   startNuFaceFinisher(winner, loser) {
     const facing = loser.x >= winner.x ? 1 : -1;
     winner.facing = facing;
@@ -2862,7 +2947,7 @@ class FightScene extends Phaser.Scene {
   }
 
   endMatch(winner) {
-    const careerEnderIds = ['donp', 'liljon', 'scrappy', 'bonecrusher', 'pastortroy', 'princess', 'diamond', 'djmontay', 'djscream', 'fabo', 'nuface'];
+    const careerEnderIds = ['donp', 'liljon', 'scrappy', 'bonecrusher', 'pastortroy', 'princess', 'diamond', 'djmontay', 'djscream', 'fabo', 'nuface', 'guccimane'];
     if (!this.careerEnderStamped && careerEnderIds.includes(winner.cfg.id)) {
       this.careerEnderStamped = true;
       this.showCareerEnderStamp(winner);
