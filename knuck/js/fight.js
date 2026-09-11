@@ -1309,6 +1309,14 @@ class FightScene extends Phaser.Scene {
       this.startDjMontayFinisher(winner, loser);
       return;
     }
+    if (winner.roundsWon >= 2 && winner.cfg.id === 'nuface') {
+      this.startNuFaceFinisher(winner, loser);
+      return;
+    }
+    if (winner.roundsWon >= 2 && winner.cfg.id === 'fabo') {
+      this.startFaboFinisher(winner, loser);
+      return;
+    }
     if (winner.roundsWon >= 2 && winner.cfg.id === 'djscream') {
       this.startDjScreamFinisher(winner, loser);
       return;
@@ -2518,6 +2526,176 @@ class FightScene extends Phaser.Scene {
     });
   }
 
+  startNuFaceFinisher(winner, loser) {
+    const facing = loser.x >= winner.x ? 1 : -1;
+    winner.facing = facing;
+    loser.facing = -facing;
+    winner.setState('idle');
+    loser.setState('ko');
+    this.slowmo = 1;
+    stopMusic(this);
+    loser.sprite.setVisible(false);
+    const curtain = this.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, 0x100817, 0.46).setDepth(5);
+    // The autograph travels and stretches with the opponent through the entire gag.
+    const source = this.textures.get(loser.cfg.id).getSourceImage();
+    const height = source.height * loser.baseScale;
+    const victim = this.add.container(loser.x, loser.y - height / 2).setDepth(9);
+    victim.add(this.add.image(0, 0, loser.cfg.id).setScale(loser.baseScale).setFlipX(loser.facing === -1));
+    const signature = this.add.text(-24, -height * 0.16, '', {
+      fontFamily: 'cursive', fontSize: '13px', fontStyle: 'bold italic',
+      color: '#ffdc55', stroke: '#231006', strokeThickness: 2
+    }).setAngle(-9);
+    victim.add(signature);
+    this.centerText.setColor('#ffdd66').setFontSize(46);
+    this.bigText('CAREER ENDER', 1300, 'NUFACE · SIGNED, SEALED, AIRMAILED');
+    this.cameras.main.zoomTo(1.04, 650, 'Sine.easeOut');
+    const signX = Phaser.Math.Clamp(loser.x - facing * 70, 38, GAME_W - 38);
+    this.tweens.add({ targets: winner, x: signX, duration: 700, ease: 'Sine.easeInOut' });
+    this.time.delayedCall(900, () => {
+      playVoice(this, 'nuface_s1');
+      const shirtY = victim.y - height * 0.16;
+      const arm = this.add.graphics().setDepth(10);
+      const pen = this.add.rectangle(victim.x - 24, shirtY, 4, 19, 0xffdc55)
+        .setStrokeStyle(1, 0x201508).setAngle(25).setDepth(11);
+      const ink = { p: 0 };
+      this.tweens.add({ targets: ink, p: 1, duration: 1150, ease: 'Linear', onUpdate: () => {
+        signature.setText('NuFace'.slice(0, Math.ceil(ink.p * 6)));
+        pen.x = victim.x - 24 + ink.p * 46;
+        pen.y = shirtY + Math.sin(ink.p * Math.PI * 12) * 4;
+        arm.clear().lineStyle(8, 0x9a603b, 1)
+          .lineBetween(winner.x + facing * 12, winner.y - winner.cfg.height * 0.64, pen.x - facing * 3, pen.y + 6);
+      }, onComplete: () => {
+        pen.destroy();
+        arm.destroy();
+        SFX.special();
+        this.sparkAt(victim.x, shirtY, 0xffdd66, 14);
+        this.tweens.add({ targets: winner, x: Phaser.Math.Clamp(winner.x - facing * 45, 35, GAME_W - 35), duration: 450 });
+        // Widen first, then lift the feet: the fighter visibly balloons before taking off.
+        this.tweens.add({ targets: victim, scaleX: 2.35, scaleY: 1.28, y: loser.y - height * 0.64 - 15,
+          duration: 1400, ease: 'Sine.easeInOut', onComplete: () => {
+            this.tweens.add({ targets: victim, x: GAME_W / 2, y: -height * 2, angle: facing * 14,
+              duration: 1900, ease: 'Sine.easeIn', onComplete: () => {
+                // A brief empty-sky beat makes the sudden foreground drop readable.
+                this.time.delayedCall(450, () => {
+                  victim.setDepth(31).setPosition(GAME_W / 2, -height * 2).setAngle(-facing * 8);
+                  this.cameras.main.zoomTo(1, 200, 'Sine.easeOut');
+                  this.tweens.add({ targets: victim, y: GAME_H * 0.48, scaleX: 4.1, scaleY: 3.2,
+                    angle: 0, duration: 650, ease: 'Cubic.easeIn', onComplete: () => {
+                      SFX.heavyHit();
+                      SFX.ko();
+                      this.cameras.main.flash(160, 255, 234, 190, false);
+                      this.cameras.main.shake(700, 0.045);
+                      this.sparkAt(victim.x, victim.y, 0xffdd66, 35);
+                      const cracks = this.add.graphics().setDepth(32);
+                      cracks.lineStyle(2, 0xe6f4ff, 0.9);
+                      for (let i = 0; i < 12; i++) {
+                        const a = i * Math.PI / 6;
+                        const x = victim.x + Math.cos(a) * 70;
+                        const y = victim.y + Math.sin(a) * 55;
+                        cracks.lineBetween(victim.x, victim.y, x, y);
+                        cracks.lineBetween(x, y, x + Math.cos(a + 0.16) * 100, y + Math.sin(a + 0.16) * 85);
+                      }
+                      this.tweens.add({ targets: victim, scaleX: 4.7, scaleY: 2.5, duration: 140, yoyo: true });
+                      winner.setState('win');
+                      playVoice(this, 'nuface_win');
+                      this.time.delayedCall(950, () => {
+                        this.tweens.add({ targets: victim, y: GAME_H + height * 2, duration: 1500,
+                          ease: 'Quad.easeIn', onComplete: () => victim.destroy() });
+                      });
+                      this.time.delayedCall(2650, () => {
+                        this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
+                        this.tweens.add({ targets: [curtain, cracks], alpha: 0, duration: 300,
+                          onComplete: () => { curtain.destroy(); cracks.destroy(); } });
+                        this.endMatch(winner, loser);
+                      });
+                    } });
+                });
+              } });
+          } });
+      } });
+    });
+  }
+
+  startFaboFinisher(winner, loser) {
+    const facing = loser.x >= winner.x ? 1 : -1;
+    winner.facing = facing;
+    loser.facing = -facing;
+    winner.setState('idle');
+    loser.setState('ko');
+    stopMusic(this);
+    this.slowmo = 1;
+    // Use independent actors so the normal pose renderer cannot restore glasses or a head.
+    winner.sprite.setVisible(false);
+    loser.sprite.setVisible(false);
+    const curtain = this.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, 0x080314, 0.48).setDepth(5);
+    const actor = this.add.container(winner.x, winner.y).setDepth(9);
+    actor.setScale(winner.baseScale * facing, winner.baseScale);
+    const source = this.textures.get('fabo').getSourceImage();
+    const w = source.width, h = source.height;
+    actor.add(this.add.image(0, 0, 'fabo').setOrigin(0.5, 1));
+    // Face coordinates follow the base Fabo artwork, expressed in texture space.
+    const eyeX = w * 0.035, eyeY = -h * 0.915;
+    const face = this.add.graphics().setVisible(false);
+    face.fillStyle(0x99501e).fillRoundedRect(eyeX - w * 0.095, eyeY - h * 0.016, w * 0.18, h * 0.033, 2);
+    face.lineStyle(2, 0x32190e).lineBetween(eyeX, eyeY, eyeX + w * 0.05, eyeY - 1);
+    actor.add(face);
+    const glasses = this.add.container(eyeX, eyeY);
+    const frames = this.add.graphics();
+    frames.fillStyle(0x10121b).fillRoundedRect(-18, -5, 15, 10, 2).fillRoundedRect(1, -5, 15, 10, 2);
+    frames.lineStyle(2.5, 0xffffff).strokeRoundedRect(-18, -5, 15, 10, 2).strokeRoundedRect(1, -5, 15, 10, 2).lineBetween(-3, -2, 1, -2);
+    glasses.add(frames);
+    actor.add(glasses);
+    const hand = this.add.circle(w * 0.34, -h * 0.55, 7, 0x99501e).setStrokeStyle(2, 0x38200f);
+    actor.add(hand);
+    const victim = this.add.image(loser.x, loser.y, loser.cfg.id).setOrigin(0.5, 1)
+      .setScale(loser.baseScale).setFlipX(loser.facing === -1).setDepth(8);
+    this.centerText.setColor('#ff66bb').setFontSize(46);
+    this.bigText('CAREER ENDER', 1400, 'FABO · SHADES OFF');
+    this.cameras.main.zoomTo(1.04, 600, 'Sine.easeOut');
+    this.tweens.add({ targets: hand, x: eyeX + 15, y: eyeY, delay: 650, duration: 450, ease: 'Sine.easeInOut' });
+    this.time.delayedCall(1100, () => {
+      face.setVisible(true);
+      this.tweens.add({ targets: [glasses, hand], x: eyeX + 42, y: eyeY + 32, duration: 430, ease: 'Sine.easeInOut' });
+    });
+    this.time.delayedCall(1800, () => {
+      playVoice(this, 'fabo_s2');
+      SFX.special();
+      const launchX = actor.x + glasses.x * winner.baseScale * facing;
+      const launchY = actor.y + glasses.y * winner.baseScale;
+      actor.remove(glasses);
+      this.add.existing(glasses);
+      glasses.setPosition(launchX, launchY).setScale(winner.baseScale).setDepth(12);
+      this.tweens.add({ targets: hand, x: w * 0.38, y: -h * 0.76, duration: 170 });
+      const targetSource = this.textures.get(loser.cfg.id).getSourceImage();
+      const cut = Math.round(targetSource.height * 0.19);
+      const hitY = loser.y - (targetSource.height - cut * 0.55) * loser.baseScale;
+      this.tweens.add({ targets: glasses, x: loser.x, y: hitY, angle: facing * 1080, duration: 480, ease: 'Quad.easeIn', onComplete: () => {
+        SFX.heavyHit();
+        SFX.ko();
+        this.cameras.main.flash(150, 255, 210, 245, false);
+        this.cameras.main.shake(600, 0.035);
+        this.sparkAt(loser.x, hitY, 0xff66bb, 28);
+        this.shockRing(loser.x, hitY, 0xffffff);
+        victim.setCrop(0, cut, targetSource.width, targetSource.height - cut);
+        // Center the cropped head's origin on the head, so it spins around itself.
+        const head = this.add.image(loser.x, loser.y - (targetSource.height - cut / 2) * loser.baseScale, loser.cfg.id)
+          .setOrigin(0.5, cut / (2 * targetSource.height)).setScale(loser.baseScale)
+          .setFlipX(loser.facing === -1).setCrop(0, 0, targetSource.width, cut).setDepth(11);
+        this.tweens.add({ targets: head, x: loser.x + facing * 230, y: -100, angle: facing * 750, duration: 1050, ease: 'Quad.easeOut', onComplete: () => head.destroy() });
+        this.tweens.add({ targets: glasses, x: loser.x + facing * GAME_W, y: hitY - 90, angle: facing * 2200, duration: 700, onComplete: () => glasses.destroy() });
+        this.tweens.add({ targets: victim, y: loser.y + 8, scaleY: loser.baseScale * 0.18, angle: facing * 12, delay: 170, duration: 650, ease: 'Quad.easeIn' });
+        this.tweens.add({ targets: hand, x: w * 0.34, y: -h * 0.55, duration: 450 });
+        this.time.delayedCall(1100, () => playVoice(this, 'fabo_win'));
+        this.time.delayedCall(2000, () => {
+          this.cameras.main.zoomTo(1, 300, 'Sine.easeOut');
+          this.centerText.setColor('#ffcc22').setFontSize(38).setScale(1);
+          this.tweens.add({ targets: curtain, alpha: 0, duration: 300, onComplete: () => curtain.destroy() });
+          this.endMatch(winner, loser);
+        });
+      } });
+    });
+  }
+
   startDjScreamFinisher(winner, loser) {
     const facing = loser.x >= winner.x ? 1 : -1;
     winner.facing = facing;
@@ -2684,7 +2862,7 @@ class FightScene extends Phaser.Scene {
   }
 
   endMatch(winner) {
-    const careerEnderIds = ['donp', 'liljon', 'scrappy', 'bonecrusher', 'pastortroy', 'princess', 'diamond', 'djmontay', 'djscream'];
+    const careerEnderIds = ['donp', 'liljon', 'scrappy', 'bonecrusher', 'pastortroy', 'princess', 'diamond', 'djmontay', 'djscream', 'fabo', 'nuface'];
     if (!this.careerEnderStamped && careerEnderIds.includes(winner.cfg.id)) {
       this.careerEnderStamped = true;
       this.showCareerEnderStamp(winner);
