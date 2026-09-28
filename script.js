@@ -181,12 +181,14 @@ if (accessForm && accessStatus) {
       const config = window.DONPONLINE_CONFIG || {};
       const memberRedirectUrl = new URL("/members.html", config.siteUrl || "https://donponline.com").href;
       let membershipError = null;
+      let membershipMessage = "";
 
       if (wantsMembership) {
         if (!window.supabase?.createClient) throw new Error("Member signup could not load. Please refresh and try again.");
         const authClient = window.supabase.createClient(config.supabaseUrl, config.supabasePublishableKey);
-        const { error } = await authClient.auth.signUp({
-          email: String(data.get("email") || "").trim(),
+        const membershipEmail = String(data.get("email") || "").trim();
+        const { data: signupData, error } = await authClient.auth.signUp({
+          email: membershipEmail,
           password: String(data.get("membership_password") || ""),
           options: {
             data: { display_name: String(data.get("name") || "").trim() },
@@ -194,6 +196,17 @@ if (accessForm && accessStatus) {
           }
         });
         membershipError = error;
+        if (!membershipError && Array.isArray(signupData.user?.identities) && signupData.user.identities.length === 0) {
+          const { error: resendError } = await authClient.auth.resend({
+            type: "signup",
+            email: membershipEmail,
+            options: { emailRedirectTo: memberRedirectUrl }
+          });
+          membershipError = resendError;
+          membershipMessage = resendError
+            ? "Your request was sent, but this email may already have an account. Sign in or reset your password in the members portal."
+            : "Your request was sent and we sent a new account-confirmation email. Check spam too.";
+        }
       }
 
       const response = await fetch(`${config.supabaseUrl}/functions/v1/access-request`, {
@@ -216,7 +229,7 @@ if (accessForm && accessStatus) {
       membershipOptions.hidden = true;
       accessSubmitLabel.textContent = "SEND MY ACCESS REQUEST";
       accessStatus.textContent = wantsMembership
-        ? "You’re in. Check your email to confirm your member account and activate 100 Motion Coins."
+        ? membershipMessage || "You’re in. Check your email to confirm your member account and activate 100 Motion Coins."
         : result.message;
     } catch (error) {
       accessStatus.textContent = error.message || "Could not send request. Please try again.";

@@ -364,12 +364,13 @@
       return;
     }
     const formData = new FormData(signupForm);
+    const email = String(formData.get("email") || "").trim();
     setLoading(signupForm, true);
     let data;
     let error;
     try {
       ({ data, error } = await client.auth.signUp({
-        email: String(formData.get("email") || "").trim(),
+        email,
         password: String(formData.get("password") || ""),
         options: {
           data: { display_name: String(formData.get("display_name") || "").trim() },
@@ -386,11 +387,26 @@
       showToast(error.message);
       return;
     }
-    signupForm.reset();
     if (data.session) {
+      signupForm.reset();
       showToast("Welcome! Your 100 Motion Coins are ready.");
       await loadMemberData();
+    } else if (Array.isArray(data.user?.identities) && data.user.identities.length === 0) {
+      // Supabase hides whether an address already exists. Explicitly resend so an
+      // unconfirmed member is not shown a misleading signup-success message.
+      const { error: resendError } = await client.auth.resend({
+        type: "signup",
+        email,
+        options: { emailRedirectTo: memberRedirectUrl }
+      });
+      signupForm.elements.password.value = "";
+      signupForm.elements.email.value = email;
+      showToast(resendError
+        ? "This email may already have an account. Try signing in or resetting your password."
+        : "We found an unconfirmed account and sent a new confirmation email. Check spam too.");
     } else {
+      signupForm.reset();
+      signupForm.elements.email.value = email;
       showToast("Check your email to confirm your account and claim your 100 Motion Coins.");
     }
   });

@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<style>html:not(.member-access-ready) body{display:none!important}</style>
+<noscript><meta http-equiv="refresh" content="0;url=/"></noscript>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/assets/js/supabase-config.js"></script>
+<script src="/assets/js/access-gate.js?v=1"></script>
+
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="description" content="Target Practice — the official Target Practice 4 arcade game from Don P." />
@@ -16,13 +23,13 @@
   <div class="grain" aria-hidden="true"></div>
 
   <header class="game-header">
-    <a class="game-brand" href="index.html" aria-label="Back to DONPONLINE">
+    <a class="game-brand" href="home.html" aria-label="Back to DONPONLINE">
       <video autoplay muted loop playsinline aria-hidden="true">
         <source src="assets/videos/don-p-logo-fire-intro.mp4" type="video/mp4" />
       </video>
       <span>DONPONLINE</span>
     </a>
-    <a class="exit-link" href="index.html#music">Exit game</a>
+    <a class="exit-link" href="home.html#music">Exit game</a>
   </header>
 
   <main class="game-shell">
@@ -120,8 +127,8 @@
     </div>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/js/supabase-config.js"></script>
+
+
   <script src="target-practice.js"></script>
 </body>
 </html>

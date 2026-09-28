@@ -1,6 +1,12 @@
 <!doctype html>
 <html lang="en">
 <head>
+<style>html:not(.member-access-ready) body{display:none!important}</style>
+<noscript><meta http-equiv="refresh" content="0;url=/"></noscript>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/assets/js/supabase-config.js"></script>
+<script src="/assets/js/access-gate.js?v=1"></script>
+
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#080808">
@@ -19,7 +25,7 @@
 <body class="community-page">
   <div class="noise"></div>
   <header class="community-header">
-    <a class="brand" href="../index.html"><span class="community-mark">DP</span><span>DONPONLINE</span></a>
+    <a class="brand" href="../home.html"><span class="community-mark">DP</span><span>DONPONLINE</span></a>
     <nav><a href="../members.html">Motion Coins</a><a href="../crunkville/">Crunkville</a><a href="../account/library/">My Library</a><button id="rules-button" type="button">Community Rules</button></nav>
   </header>
 
@@ -83,8 +89,8 @@
   </dialog>
 
   <div id="community-toast" class="community-toast" role="status"></div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="../assets/js/supabase-config.js"></script>
+
+
   <script src="community.js?v=2"></script>
 </body>
 </html>

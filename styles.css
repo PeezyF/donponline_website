@@ -74,7 +74,8 @@ img { max-width: 100%; }
 .nav-links { display: flex; gap: clamp(12px, 1.65vw, 30px); align-items: center; font-size: clamp(10px, .82vw, 13px); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
 .nav-links a { opacity: .8; transition: .2s; }
 .nav-links a:hover { opacity: 1; color: var(--acid); }
-.nav-links .nav-cta { border: 1px solid var(--white); padding: 12px 18px; opacity: 1; }
+.nav-links .nav-cta { border: 1px solid var(--acid); background: var(--acid); color: #070707; padding: 12px 18px; opacity: 1; }
+.nav-links .nav-cta:hover { background: var(--white); color: #070707; }
 .menu-toggle { display: none; background: none; border: 0; width: 44px; height: 44px; padding: 10px; }
 .menu-toggle span { display: block; height: 2px; background: var(--white); margin: 7px 0; }
 
@@ -138,7 +139,7 @@ img { max-width: 100%; }
 }
 .hero-eyebrow { margin-bottom: clamp(20px, 3vh, 36px); }
 .hero-title {
-  font-size: clamp(72px, 12vw, 190px);
+  font-size: clamp(64px, 10vw, 150px);
   line-height: .78;
   letter-spacing: -.035em;
 }
@@ -159,6 +160,8 @@ img { max-width: 100%; }
   line-height: 1.4;
 }
 .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+.hero-signup-note { margin: 16px 0 10px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.hero-signin { font-size: 13px; text-decoration: underline; text-underline-offset: 4px; }
 @keyframes hero-title-in {
   to { opacity: 1; transform: translateY(0); }
 }
@@ -748,7 +751,7 @@ footer a:hover { color: var(--acid); }
     align-items: flex-end;
     background-position: 62% center;
   }
-  .hero-title { font-size: clamp(64px, 23vw, 104px); line-height: .82; }
+  .hero-title { font-size: clamp(48px, 16vw, 80px); line-height: .82; }
   .hero-description { margin-block: 24px; font-size: 18px; }
   .hero-actions { width: 100%; }
   .hero-actions .button { width: 100%; }
@@ -795,20 +798,4 @@ footer a:hover { color: var(--acid); }
   .target-art::before,
   .target-art::after,
   .mini-player::before,
-  .mini-player::after { animation: none; }
-  .hero-title span {
-    opacity: 1;
-    transform: none;
-    animation: none;
-  }
-}
-.form-honeypot {
-  position: absolute !important;
-  left: -9999px !important;
-}
-
-.access-status {
-  min-height: 1.4em;
-  margin-top: 0.8rem;
-  color: var(--cream, #f4ead8);
-}
+  .
